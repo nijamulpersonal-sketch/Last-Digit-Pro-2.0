@@ -1,6 +1,6 @@
 {
-  "name": "Last Digit Pro",
-  "short_name": "LastDigitPro",
+  "name": "Digit Pro",
+  "short_name": "DigitPro",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",

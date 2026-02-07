@@ -9,6 +9,7 @@ import Home from "@/pages/home";
 import LuckySearch from "@/pages/lucky-search";
 import DearDigits from "@/pages/dear-digits";
 import Login from "@/pages/login";
+import PWAInstallButton from "@/components/PWAInstallButton"; // Add this import
 
 function AppRoutes() {
   return (
@@ -30,6 +31,8 @@ function App() {
         <Router hook={useHashLocation}>
           <AppRoutes />
         </Router>
+        {/* Add PWAInstallButton here - outside Router but inside providers */}
+        <PWAInstallButton />
       </TooltipProvider>
     </QueryClientProvider>
   );

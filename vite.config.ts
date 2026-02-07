@@ -1,5 +1,13 @@
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
 export default defineConfig({
-  base: '/',
+  base: '/',   // custom domain হলে root path
   root: path.resolve(__dirname, 'client'),
   plugins: [react(), tailwindcss()],
   resolve: {

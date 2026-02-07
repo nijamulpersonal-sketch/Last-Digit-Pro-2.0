@@ -1,116 +1,37 @@
-// Enhanced Service Worker with caching
-const CACHE_NAME = 'app-v1';
+const CACHE_NAME = 'app-v2'; // version বাড়ালাম যাতে নতুন SW activate হয়
 const urlsToCache = [
   '/',
-  '/index.html',
-  // Add other critical assets here
+  '/index.html'
 ];
 
-// Install event - cache essential resources
-self.addEventListener('install', function(event) {
-  console.log('Service Worker: Installing...');
-  
+// INSTALL
+self.addEventListener('install', (event) => {
+  self.skipWaiting(); // immediately activate
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(function(cache) {
-        console.log('Service Worker: Caching app shell');
-        return cache.addAll(urlsToCache);
-      })
-      .then(() => {
-        console.log('Service Worker: Skip waiting');
-        return self.skipWaiting();
-      })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
   );
 });
 
-// Activate event - clean up old caches
-self.addEventListener('activate', function(event) {
-  console.log('Service Worker: Activating...');
-  
+// ACTIVATE
+self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then(function(cacheNames) {
-      return Promise.all(
-        cacheNames.map(function(cacheName) {
-          if (cacheName !== CACHE_NAME) {
-            console.log('Service Worker: Clearing old cache', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => {
-      console.log('Service Worker: Claiming clients');
-      return self.clients.claim();
-    })
+    caches.keys().then((names) =>
+      Promise.all(names.map((name) => name !== CACHE_NAME && caches.delete(name)))
+    ).then(() => self.clients.claim()) // TAKE CONTROL IMMEDIATELY
   );
 });
 
-// Fetch event - network first, fallback to cache
-self.addEventListener('fetch', function(event) {
-  // Skip non-GET requests
+// FETCH
+self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
-  
-  // For API calls or dynamic content, go network first
-  if (event.request.url.includes('/api/') || event.request.url.includes('/auth/')) {
-    event.respondWith(
-      fetch(event.request)
-        .catch(() => {
-          return new Response(JSON.stringify({ error: 'Network failed' }), {
-            status: 503,
-            headers: { 'Content-Type': 'application/json' }
-          });
-        })
-    );
-    return;
-  }
-  
-  // For static assets, try cache first
-  event.respondWith(
-    caches.match(event.request)
-      .then(function(response) {
-        // Return cached response if found
-        if (response) {
-          return response;
-        }
-        
-        // Clone the request
-        const fetchRequest = event.request.clone();
-        
-        // Make network request
-        return fetch(fetchRequest).then(
-          function(response) {
-            // Check if valid response
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-            
-            // Clone the response
-            const responseToCache = response.clone();
-            
-            // Cache the new response
-            caches.open(CACHE_NAME)
-              .then(function(cache) {
-                cache.put(event.request, responseToCache);
-              });
-            
-            return response;
-          }
-        ).catch(() => {
-          // If both cache and network fail, return offline page for HTML requests
-          if (event.request.headers.get('accept')?.includes('text/html')) {
-            return caches.match('/index.html');
-          }
-          return new Response('Offline - No internet connection', {
-            status: 503,
-            headers: { 'Content-Type': 'text/plain' }
-          });
-        });
-      })
-  );
-});
 
-// Listen for messages (like skipWaiting)
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
+  event.respondWith(
+    fetch(event.request)
+      .then((res) => {
+        const resClone = res.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, resClone));
+        return res;
+      })
+      .catch(() => caches.match(event.request).then((res) => res || caches.match('/index.html')))
+  );
 });

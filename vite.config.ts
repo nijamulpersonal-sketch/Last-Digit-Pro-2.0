@@ -7,6 +7,7 @@ import { fileURLToPath } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
+  base: '/Last-Digit-Pro-2.0/',   // ⭐ GitHub Pages repo name
   root: path.resolve(__dirname, "client"),
   plugins: [react(), tailwindcss()],
   resolve: {
@@ -16,7 +17,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: path.resolve(__dirname, "dist/public"),
+    outDir: path.resolve(__dirname, "dist"), // ⭐ dist/public নয়
     emptyOutDir: true,
   },
 })

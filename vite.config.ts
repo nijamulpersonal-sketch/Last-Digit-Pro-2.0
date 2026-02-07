@@ -7,17 +7,17 @@ import { fileURLToPath } from 'url'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export default defineConfig({
-  base: '/Last-Digit-Pro-2.0/',   // ⭐ GitHub Pages repo name
-  root: path.resolve(__dirname, "client"),
+  base: '/Last-Digit-Pro-2.0/',
+  root: path.resolve(__dirname, 'client'),
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "client", "src"),
-      "@shared": path.resolve(__dirname, "shared"),
+      '@': path.resolve(__dirname, 'client', 'src'),
+      '@shared': path.resolve(__dirname, 'shared'),
     },
   },
   build: {
-    outDir: path.resolve(__dirname, "dist"), // ⭐ dist/public নয়
+    outDir: path.resolve(__dirname, 'dist'),
     emptyOutDir: true,
   },
 })

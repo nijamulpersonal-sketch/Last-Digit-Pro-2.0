@@ -8,19 +8,17 @@ import {
   FileText,
   Settings,
   Lock,
-  UserCircle,
   MessageSquare,
   Users,
   Home as HomeIcon,
   History,
   CheckCircle,
-  Send // টেলিগ্রাম আইকন যোগ করা হয়েছে
+  Send
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { PrivacyPolicyModal } from "@/components/modals/privacy-policy-modal";
 import { SubscriptionModal } from "@/components/modals/subscription-modal";
 import { SettingsModal } from "@/components/modals/settings-modal";
-import { ProfileModal } from "@/components/modals/profile-modal";
 import { ChatBotModal } from "@/components/modals/chatbot-modal";
 import { HistoryModal } from "@/components/modals/history-modal";
 
@@ -29,11 +27,9 @@ export default function Home() {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showSubscription, setShowSubscription] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
   const [showChatBot, setShowChatBot] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<'first-time' | 'regular' | null>(null);
-  const [user, setUser] = useState<any>(null);
   const [activeUsers, setActiveUsers] = useState(124);
 
   useEffect(() => {
@@ -42,15 +38,6 @@ export default function Home() {
       setLocation("/login");
       return;
     }
-
-    const userData = JSON.parse(localStorage.getItem('user_profile') || '{}');  
-    setUser({  
-      uid: userData.uid || 'guest-123',  
-      name: userData.name || "Guest User",  
-      email: userData.email || "guest@example.com",  
-      balance: 0,  
-      createdAt: new Date().toISOString()  
-    });  
 
     const updateActiveUsers = () => {    
       const now = new Date();    
@@ -92,11 +79,6 @@ export default function Home() {
   };
   const handlePrivacyClose = () => setShowPrivacy(false);
 
-  const handleProfileUpdate = (updatedUser: any) => {
-    setUser(updatedUser);
-    localStorage.setItem('user_profile', JSON.stringify(updatedUser));
-  };
-
   return (
     <div className="min-h-screen pb-16 bg-slate-900 selection:bg-amber-500/30">
       <div className="max-w-md mx-auto px-4 pt-4">    
@@ -115,16 +97,6 @@ export default function Home() {
                 {activeUsers} Live    
               </span>    
             </div>    
-
-            <button     
-              onClick={() => setShowProfile(true)}    
-              className="p-1.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex items-center gap-2 group"    
-            >    
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg shadow-amber-500/20 overflow-hidden">    
-                <UserCircle className="w-5 h-5 text-white" />    
-              </div>    
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-amber-400 transition-colors">Profile</span>    
-            </button>    
           </div>    
 
           <div className="glass rounded-2xl px-4 py-3 mb-2 gold-glow border-amber-400/20">    
@@ -306,9 +278,8 @@ export default function Home() {
       <SettingsModal isOpen={showSettings} onClose={handleSettingsClose} onOpenPrivacy={handlePrivacyOpen} />    
       <PrivacyPolicyModal isOpen={showPrivacy} onClose={handlePrivacyClose} />    
       <SubscriptionModal isOpen={showSubscription} onClose={() => setShowSubscription(false)} planType={selectedPlan} />    
-      <ProfileModal isOpen={showProfile} onClose={() => setShowProfile(false)} onUpdate={handleProfileUpdate} />    
       <ChatBotModal isOpen={showChatBot} onClose={() => setShowChatBot(false)} />    
       <HistoryModal isOpen={showHistory} onClose={() => setShowHistory(false)} />  
     </div>
   );
-}
+          }

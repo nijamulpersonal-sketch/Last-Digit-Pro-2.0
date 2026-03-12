@@ -33,12 +33,6 @@ export default function Home() {
   const [activeUsers, setActiveUsers] = useState(124);
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem('is_logged_in') === 'true';
-    if (!isLoggedIn) {
-      setLocation("/login");
-      return;
-    }
-
     const updateActiveUsers = () => {    
       const now = new Date();    
       const hour = now.getHours();    
@@ -282,4 +276,4 @@ export default function Home() {
       <HistoryModal isOpen={showHistory} onClose={() => setShowHistory(false)} />  
     </div>
   );
-          }
+}

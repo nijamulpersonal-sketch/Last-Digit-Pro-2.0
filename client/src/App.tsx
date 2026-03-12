@@ -8,14 +8,12 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import LuckySearch from "@/pages/lucky-search";
 import DearDigits from "@/pages/dear-digits";
-import Login from "@/pages/login";
-import PWAInstallButton from "@/components/PWAInstallButton"; // Add this import
+import PWAInstallButton from "@/components/PWAInstallButton";
 
 function AppRoutes() {
   return (
     <Switch>
       <Route path="/" component={Home} />
-      <Route path="/login" component={Login} />
       <Route path="/lucky-search" component={LuckySearch} />
       <Route path="/dear-digits" component={DearDigits} />
       <Route component={NotFound} />
@@ -31,7 +29,6 @@ function App() {
         <Router hook={useHashLocation}>
           <AppRoutes />
         </Router>
-        {/* Add PWAInstallButton here - outside Router but inside providers */}
         <PWAInstallButton />
       </TooltipProvider>
     </QueryClientProvider>

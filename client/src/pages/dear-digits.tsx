@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback } from "react";
 import { ChevronLeft, Filter } from "lucide-react";
 import { Link } from "wouter";
+import { FixedSizeList as List } from "react-window";
 
 // Extended VALUES array with 100 days (61 historical + 39 future placeholders)
 const VALUES = [
@@ -151,45 +152,62 @@ const generateData = () => {
   return data;
 };
 
-// Virtual scroll component for performance
+// Memoized row component for virtualized list
+const Row = React.memo(({ index, style, data }: {
+  index: number;
+  style: React.CSSProperties;
+  data: { rows: Array<{date: string, mor: string, day: string, evn: string}>, searchTerm: string };
+}) => {
+  const { rows, searchTerm } = data;
+  const row = rows[index];
+
+  const isHighlighted = (val: string) => {
+    if (!searchTerm || val === "-" || val === "" || val === "." || val === ",") return false;
+    return val === searchTerm;
+  };
+
+  return (
+    <div style={style} className="grid grid-cols-4 text-center items-center border-b border-slate-200">
+      <div className="py-2.5 bg-[#e1eaf1] text-slate-700 font-medium border-r border-slate-200 sticky left-0">
+        {row.date}
+      </div>
+      <div className={`py-2.5 border-r border-slate-200 font-bold transition-colors duration-200 ${
+        isHighlighted(row.mor) ? 'bg-yellow-300 text-slate-900' : 'text-slate-800'
+      }`}>
+        {row.mor === "," ? "-" : (row.mor || "-")}
+      </div>
+      <div className={`py-2.5 border-r border-slate-200 font-bold transition-colors duration-200 ${
+        isHighlighted(row.day) ? 'bg-yellow-300 text-slate-900' : 'text-slate-800'
+      }`}>
+        {row.day === "," ? "-" : (row.day || "-")}
+      </div>
+      <div className={`py-2.5 font-bold transition-colors duration-200 ${
+        isHighlighted(row.evn) ? 'bg-yellow-300 text-slate-900' : 'text-slate-800'
+      }`}>
+        {row.evn === "," ? "-" : (row.evn || "-")}
+      </div>
+    </div>
+  );
+});
+
+// Virtual scroll component using react-window
 const VirtualTable = ({ data, searchTerm }: { 
   data: Array<{date: string, mor: string, day: string, evn: string}>, 
   searchTerm: string
 }) => {
-  const isHighlighted = useCallback((val: string) => {
-    if (!searchTerm || val === "-" || val === "" || val === "." || val === ",") return false;
-    return val === searchTerm;
-  }, [searchTerm]);
+  const itemData = useMemo(() => ({ rows: data, searchTerm }), [data, searchTerm]);
 
   return (
-    <div className="overflow-y-auto max-h-[600px]">
-      <div className="divide-y divide-slate-200">
-        {data.map((row, idx) => (
-          <div key={`${row.date}-${idx}`} className="grid grid-cols-4 text-center items-center">
-            <div className="py-2.5 bg-[#e1eaf1] text-slate-700 font-medium border-r border-slate-200 sticky left-0">
-              {row.date}
-            </div>
-            
-            <div className={`py-2.5 border-r border-slate-200 font-bold transition-colors duration-200 ${
-              isHighlighted(row.mor) ? 'bg-yellow-300 text-slate-900' : 'text-slate-800'
-            }`}>
-              {row.mor === "," ? "-" : (row.mor || "-")}
-            </div>
-            
-            <div className={`py-2.5 border-r border-slate-200 font-bold transition-colors duration-200 ${
-              isHighlighted(row.day) ? 'bg-yellow-300 text-slate-900' : 'text-slate-800'
-            }`}>
-              {row.day === "," ? "-" : (row.day || "-")}
-            </div>
-            
-            <div className={`py-2.5 font-bold transition-colors duration-200 ${
-              isHighlighted(row.evn) ? 'bg-yellow-300 text-slate-900' : 'text-slate-800'
-            }`}>
-              {row.evn === "," ? "-" : (row.evn || "-")}
-            </div>
-          </div>
-        ))}
-      </div>
+    <div className="h-[600px]">
+      <List
+        height={600}
+        itemCount={data.length}
+        itemSize={44} // fixed row height (py-2.5 + border)
+        width="100%"
+        itemData={itemData}
+      >
+        {Row}
+      </List>
     </div>
   );
 };
@@ -221,6 +239,38 @@ export default function DearDigits() {
     return Object.values(stats).reduce((a, b) => a + b, 0);
   }, [stats]);
 
+  // Memoized event handlers
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value.slice(0, 1));
+  }, []);
+
+  const handleClearSearch = useCallback(() => {
+    setSearchTerm("");
+  }, []);
+
+  const handleExportCSV = useCallback(() => {
+    const headers = ["Date", "Morning", "Day", "Evening"];
+    const csvContent = [
+      headers.join(","),
+      ...chartData.map(row => 
+        [
+          row.date, 
+          row.mor === "," ? "" : (row.mor || ""), 
+          row.day === "," ? "" : (row.day || ""), 
+          row.evn === "," ? "" : (row.evn || "")
+        ].join(",")
+      )
+    ].join("\n");
+    
+    const blob = new Blob([csvContent], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `dear-digits-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }, [chartData]);
+
   return (
     <div className="min-h-screen bg-slate-50 pb-10">
       {/* Header */}
@@ -251,13 +301,13 @@ export default function DearDigits() {
                     min="0"
                     max="9"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value.slice(0, 1))}
+                    onChange={handleSearchChange}
                     placeholder="Enter digit (0-9)"
                     className="w-full border-2 border-slate-300 rounded px-3 py-1.5 focus:outline-none focus:border-blue-400 transition-colors text-slate-800 font-medium"
                   />
                   {searchTerm && (
                     <button 
-                      onClick={() => setSearchTerm("")}
+                      onClick={handleClearSearch}
                       className="absolute right-2 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
                     >
                       Clear
@@ -330,28 +380,7 @@ export default function DearDigits() {
             
             <div className="flex gap-2">
               <button
-                onClick={() => {
-                  // Export as CSV functionality - only exports visible rows
-                  const headers = ["Date", "Morning", "Day", "Evening"];
-                  const csvContent = [
-                    headers.join(","),
-                    ...chartData.map(row => 
-                      [
-                        row.date, 
-                        row.mor === "," ? "" : (row.mor || ""), 
-                        row.day === "," ? "" : (row.day || ""), 
-                        row.evn === "," ? "" : (row.evn || "")
-                      ].join(",")
-                    )
-                  ].join("\n");
-                  
-                  const blob = new Blob([csvContent], { type: "text/csv" });
-                  const url = window.URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = `dear-digits-${new Date().toISOString().split('T')[0]}.csv`;
-                  a.click();
-                }}
+                onClick={handleExportCSV}
                 className="px-4 py-2 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
               >
                 Export CSV

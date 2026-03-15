@@ -133,14 +133,8 @@ const generateData = () => {
     const dateStr = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear().toString().slice(-2)}`;
     
     const value = VALUES[i];
-    // Check if this is a placeholder row (all three values are ",")
-    const isPlaceholder = value.mor === "," && value.day === "," && value.evn === ",";
     
-    // Skip placeholder rows completely
-    if (isPlaceholder) {
-      continue;
-    }
-    
+    // Always push the row – placeholders will be rendered as "-"
     data.push({
       date: dateStr,
       mor: value.mor || "-",
@@ -215,7 +209,7 @@ const VirtualTable = ({ data, searchTerm }: {
 export default function DearDigits() {
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Generate the data (placeholder rows are already filtered out)
+  // Generate the data – now includes all rows, placeholders become "-"
   const chartData = useMemo(() => generateData(), []);
 
   // Count occurrences for stats (exclude placeholder values)

@@ -1,8 +1,6 @@
-import React from "react";
-import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { ChevronLeft, Filter } from "lucide-react";
 import { Link } from "wouter";
-import { FixedSizeList as List } from "react-window";
 
 // Extended VALUES array with 100 days (61 historical + 39 future placeholders)
 const VALUES = [
@@ -23,7 +21,7 @@ const VALUES = [
   { mor: ",", day: ",", evn: "," },  // 17-03-26
   { mor: ",", day: ",", evn: "," },  // 16-03-26
   { mor: ",", day: ",", evn: "," },  // 15-03-26
-  { mor: "9", day: "8", evn: "0" },  // 14-03-26 (this will now be the first row)
+  { mor: ",", day: ",", evn: "," },  // 14-03-26
   { mor: "2", day: "9", evn: "4" },  // 13-03-26
   { mor: "9", day: "2", evn: "9" },  // 12-03-26
   { mor: "6", day: "2", evn: "0" },  // 11-03-26
@@ -122,122 +120,94 @@ const VALUES = [
   { mor: "7", day: "7", evn: "6" }, // 08-12-25
 ];
 
-// Generate all dates (including placeholders) and convert placeholders to "-"
+// Generate dates for the days (starting from fixed start date and going backwards)
 const generateData = () => {
-  const startDate = new Date(2026, 2, 31); // 31-03-2026
+  // Fixed start date: 31-03-2026 (first entry in VALUES array)
+  const startDate = new Date(2026, 2, 31); // Month is 0-based (2 = March)
   const data = [];
   
   for (let i = 0; i < VALUES.length; i++) {
-    const currentDate = new Date(startDate);
-    currentDate.setDate(startDate.getDate() - i);
-    
-    const dateStr = `${currentDate.getDate().toString().padStart(2, '0')}-${
-      (currentDate.getMonth() + 1).toString().padStart(2, '0')}-${
-      currentDate.getFullYear().toString().slice(-2)}`;
+    const date = new Date(startDate);
+    date.setDate(startDate.getDate() - i);
+    const dateStr = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear().toString().slice(-2)}`;
     
     const value = VALUES[i];
+    // Check if this is a placeholder row (all three values are ",")
+    const isPlaceholder = value.mor === "," && value.day === "," && value.evn === ",";
     
-    // Convert empty or "," to "-" for display
+    // Skip placeholder rows completely
+    if (isPlaceholder) {
+      continue;
+    }
+    
     data.push({
       date: dateStr,
-      mor: (value.mor === "," || value.mor === "") ? "-" : (value.mor || "-"),
-      day: (value.day === "," || value.day === "") ? "-" : (value.day || "-"),
-      evn: (value.evn === "," || value.evn === "") ? "-" : (value.evn || "-")
+      mor: value.mor || "-",
+      day: value.day || "-",
+      evn: value.evn || "-"
     });
   }
   
   return data;
 };
 
-// Memoized row component
-const Row = React.memo(({ index, style, data }: {
-  index: number;
-  style: React.CSSProperties;
-  data: { rows: Array<{date: string, mor: string, day: string, evn: string}>, searchTerm: string };
-}) => {
-  const { rows, searchTerm } = data;
-  const row = rows[index];
-
-  const isHighlighted = (val: string) => {
-    if (!searchTerm || val === "-") return false;
-    return val === searchTerm;
-  };
-
-  return (
-    <div style={style} className="grid grid-cols-4 text-center items-center border-b border-slate-200">
-      <div className="py-2.5 bg-[#e1eaf1] text-slate-700 font-medium border-r border-slate-200 sticky left-0">
-        {row.date}
-      </div>
-      <div className={`py-2.5 border-r border-slate-200 font-bold transition-colors duration-200 ${
-        isHighlighted(row.mor) ? 'bg-yellow-300 text-slate-900' : 'text-slate-800'
-      }`}>
-        {row.mor}
-      </div>
-      <div className={`py-2.5 border-r border-slate-200 font-bold transition-colors duration-200 ${
-        isHighlighted(row.day) ? 'bg-yellow-300 text-slate-900' : 'text-slate-800'
-      }`}>
-        {row.day}
-      </div>
-      <div className={`py-2.5 font-bold transition-colors duration-200 ${
-        isHighlighted(row.evn) ? 'bg-yellow-300 text-slate-900' : 'text-slate-800'
-      }`}>
-        {row.evn}
-      </div>
-    </div>
-  );
-});
-
-// Virtual scroll table
-const VirtualTable = ({ data, searchTerm, listRef }: { 
+// Virtual scroll component for performance
+const VirtualTable = ({ data, searchTerm }: { 
   data: Array<{date: string, mor: string, day: string, evn: string}>, 
-  searchTerm: string,
-  listRef: React.RefObject<any>
+  searchTerm: string
 }) => {
-  const itemData = useMemo(() => ({ rows: data, searchTerm }), [data, searchTerm]);
+  const isHighlighted = useCallback((val: string) => {
+    if (!searchTerm || val === "-" || val === "" || val === "." || val === ",") return false;
+    return val === searchTerm;
+  }, [searchTerm]);
 
   return (
-    <div className="h-[600px]">
-      <List
-        ref={listRef}
-        height={600}
-        itemCount={data.length}
-        itemSize={44}
-        width="100%"
-        itemData={itemData}
-      >
-        {Row}
-      </List>
+    <div className="overflow-y-auto max-h-[600px]">
+      <div className="divide-y divide-slate-200">
+        {data.map((row, idx) => (
+          <div key={`${row.date}-${idx}`} className="grid grid-cols-4 text-center items-center">
+            <div className="py-2.5 bg-[#e1eaf1] text-slate-700 font-medium border-r border-slate-200 sticky left-0">
+              {row.date}
+            </div>
+            
+            <div className={`py-2.5 border-r border-slate-200 font-bold transition-colors duration-200 ${
+              isHighlighted(row.mor) ? 'bg-yellow-300 text-slate-900' : 'text-slate-800'
+            }`}>
+              {row.mor === "," ? "-" : (row.mor || "-")}
+            </div>
+            
+            <div className={`py-2.5 border-r border-slate-200 font-bold transition-colors duration-200 ${
+              isHighlighted(row.day) ? 'bg-yellow-300 text-slate-900' : 'text-slate-800'
+            }`}>
+              {row.day === "," ? "-" : (row.day || "-")}
+            </div>
+            
+            <div className={`py-2.5 font-bold transition-colors duration-200 ${
+              isHighlighted(row.evn) ? 'bg-yellow-300 text-slate-900' : 'text-slate-800'
+            }`}>
+              {row.evn === "," ? "-" : (row.evn || "-")}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
 
-// Main component
 export default function DearDigits() {
   const [searchTerm, setSearchTerm] = useState("");
-  const listRef = useRef<any>(null);
-  
-  // Generate full data (placeholders become "-")
-  const fullData = useMemo(() => generateData(), []);
 
-  // Filter out completely empty rows (all three "-")
-  const chartData = useMemo(() => {
-    return fullData.filter(row => !(row.mor === "-" && row.day === "-" && row.evn === "-"));
-  }, [fullData]);
+  // Generate the data (placeholder rows are already filtered out)
+  const chartData = useMemo(() => generateData(), []);
 
-  // Scroll to top on load (now first row is 14-03-26)
-  useEffect(() => {
-    if (listRef.current) {
-      listRef.current.scrollToItem(0);
-    }
-  }, []);
-
-  // Statistics (only from visible data)
+  // Count occurrences for stats (exclude placeholder values)
   const stats = useMemo(() => {
     const counts: Record<string, number> = {};
     
     chartData.forEach(row => {
       [row.mor, row.day, row.evn].forEach(val => {
-        if (val && val !== "-") {
+        // Skip placeholder values (",") and empty/dash values
+        if (val && val !== "-" && val !== "." && val !== "" && val !== ",") {
           counts[val] = (counts[val] || 0) + 1;
         }
       });
@@ -246,41 +216,10 @@ export default function DearDigits() {
     return counts;
   }, [chartData]);
 
+  // Calculate total entries (only from visible data)
   const totalEntries = useMemo(() => {
     return Object.values(stats).reduce((a, b) => a + b, 0);
   }, [stats]);
-
-  // Event handlers
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value.slice(0, 1));
-  }, []);
-
-  const handleClearSearch = useCallback(() => {
-    setSearchTerm("");
-  }, []);
-
-  const handleExportCSV = useCallback(() => {
-    const headers = ["Date", "Morning", "Day", "Evening"];
-    const csvContent = [
-      headers.join(","),
-      ...chartData.map(row => 
-        [
-          row.date, 
-          row.mor === "-" ? "" : row.mor,
-          row.day === "-" ? "" : row.day,
-          row.evn === "-" ? "" : row.evn
-        ].join(",")
-      )
-    ].join("\n");
-    
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `dear-digits-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    window.URL.revokeObjectURL(url);
-  }, [chartData]);
 
   return (
     <div className="min-h-screen bg-slate-50 pb-10">
@@ -294,7 +233,7 @@ export default function DearDigits() {
         <div className="flex-1">
           <h1 className="text-xl font-bold">Dear : First Prize Last Digit</h1>
           <p className="text-sm opacity-90">
-            Showing {chartData.length} days with data • Total entries: {totalEntries}
+            Showing {chartData.length} days of data • Total entries: {totalEntries}
           </p>
         </div>
       </header>
@@ -312,13 +251,13 @@ export default function DearDigits() {
                     min="0"
                     max="9"
                     value={searchTerm}
-                    onChange={handleSearchChange}
+                    onChange={(e) => setSearchTerm(e.target.value.slice(0, 1))}
                     placeholder="Enter digit (0-9)"
                     className="w-full border-2 border-slate-300 rounded px-3 py-1.5 focus:outline-none focus:border-blue-400 transition-colors text-slate-800 font-medium"
                   />
                   {searchTerm && (
                     <button 
-                      onClick={handleClearSearch}
+                      onClick={() => setSearchTerm("")}
                       className="absolute right-2 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
                     >
                       Clear
@@ -330,6 +269,7 @@ export default function DearDigits() {
               {searchTerm && (
                 <div className="mt-2 text-sm text-slate-600">
                   <span className="font-semibold">Digit "{searchTerm}" appears {stats[searchTerm] || 0} times</span>
+                  {" "}in {chartData.length} days
                 </div>
               )}
             </div>
@@ -370,11 +310,10 @@ export default function DearDigits() {
           <VirtualTable 
             data={chartData} 
             searchTerm={searchTerm}
-            listRef={listRef}
           />
         </div>
 
-        {/* Instructions and Export */}
+        {/* Instructions and Export Options */}
         <div className="bg-white p-4 rounded-lg border border-slate-200">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="flex gap-3 items-start">
@@ -384,26 +323,38 @@ export default function DearDigits() {
                   Enter a digit (0-9) to highlight occurrences. Click on frequency badges to search.
                 </p>
                 <p className="text-sm text-slate-500 mt-1">
-                  Showing only dates with actual data. Placeholders are hidden until updated.
-                </p>
-                <p className="text-sm font-semibold text-green-600 mt-2">
-                  ✓ 14-03-26 now appears as the first row (values: 9, 8, 0)
+                  Showing all historical data
                 </p>
               </div>
             </div>
             
             <div className="flex gap-2">
               <button
-                onClick={handleExportCSV}
+                onClick={() => {
+                  // Export as CSV functionality - only exports visible rows
+                  const headers = ["Date", "Morning", "Day", "Evening"];
+                  const csvContent = [
+                    headers.join(","),
+                    ...chartData.map(row => 
+                      [
+                        row.date, 
+                        row.mor === "," ? "" : (row.mor || ""), 
+                        row.day === "," ? "" : (row.day || ""), 
+                        row.evn === "," ? "" : (row.evn || "")
+                      ].join(",")
+                    )
+                  ].join("\n");
+                  
+                  const blob = new Blob([csvContent], { type: "text/csv" });
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `dear-digits-${new Date().toISOString().split('T')[0]}.csv`;
+                  a.click();
+                }}
                 className="px-4 py-2 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
               >
                 Export CSV
-              </button>
-              <button
-                onClick={() => listRef.current?.scrollToItem(0)}
-                className="px-4 py-2 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
-              >
-                Scroll to Top
               </button>
             </div>
           </div>

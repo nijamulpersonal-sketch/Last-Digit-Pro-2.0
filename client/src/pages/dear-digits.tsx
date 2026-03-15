@@ -1,9 +1,10 @@
+import React from "react";
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { ChevronLeft, Filter } from "lucide-react";
 import { Link } from "wouter";
 import { FixedSizeList as List } from "react-window";
 
-// VALUES array with all data (including placeholders)
+// Extended VALUES array with 100 days (61 historical + 39 future placeholders)
 const VALUES = [
   { mor: ",", day: ",", evn: "," },  // 31-03-26
   { mor: ",", day: ",", evn: "," },  // 30-03-26
@@ -22,7 +23,7 @@ const VALUES = [
   { mor: ",", day: ",", evn: "," },  // 17-03-26
   { mor: ",", day: ",", evn: "," },  // 16-03-26
   { mor: ",", day: ",", evn: "," },  // 15-03-26
-  { mor: "9", day: "8", evn: "0" },  // 14-03-26 (এই এন্ট্রিটি এখন প্রথম সারিতে দেখাবে)
+  { mor: "9", day: "8", evn: "0" },  // 14-03-26 (this will now be the first row)
   { mor: "2", day: "9", evn: "4" },  // 13-03-26
   { mor: "9", day: "2", evn: "9" },  // 12-03-26
   { mor: "6", day: "2", evn: "0" },  // 11-03-26
@@ -121,7 +122,7 @@ const VALUES = [
   { mor: "7", day: "7", evn: "6" }, // 08-12-25
 ];
 
-// Generate all dates (including placeholders)
+// Generate all dates (including placeholders) and convert placeholders to "-"
 const generateData = () => {
   const startDate = new Date(2026, 2, 31); // 31-03-2026
   const data = [];
@@ -148,7 +149,7 @@ const generateData = () => {
   return data;
 };
 
-// Row component
+// Memoized row component
 const Row = React.memo(({ index, style, data }: {
   index: number;
   style: React.CSSProperties;
@@ -186,7 +187,7 @@ const Row = React.memo(({ index, style, data }: {
   );
 });
 
-// Virtual Table component
+// Virtual scroll table
 const VirtualTable = ({ data, searchTerm, listRef }: { 
   data: Array<{date: string, mor: string, day: string, evn: string}>, 
   searchTerm: string,
@@ -215,22 +216,22 @@ export default function DearDigits() {
   const [searchTerm, setSearchTerm] = useState("");
   const listRef = useRef<any>(null);
   
-  // Generate full data (including placeholders as "-")
+  // Generate full data (placeholders become "-")
   const fullData = useMemo(() => generateData(), []);
 
-  // Filter out rows that are completely empty (all three "-")
+  // Filter out completely empty rows (all three "-")
   const chartData = useMemo(() => {
     return fullData.filter(row => !(row.mor === "-" && row.day === "-" && row.evn === "-"));
   }, [fullData]);
 
-  // Scroll to top on initial load (now first row is 14-03-26)
+  // Scroll to top on load (now first row is 14-03-26)
   useEffect(() => {
     if (listRef.current) {
       listRef.current.scrollToItem(0);
     }
   }, []);
 
-  // Calculate statistics (only from visible data)
+  // Statistics (only from visible data)
   const stats = useMemo(() => {
     const counts: Record<string, number> = {};
     
@@ -373,7 +374,7 @@ export default function DearDigits() {
           />
         </div>
 
-        {/* Instructions */}
+        {/* Instructions and Export */}
         <div className="bg-white p-4 rounded-lg border border-slate-200">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="flex gap-3 items-start">

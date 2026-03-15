@@ -22,7 +22,7 @@ const VALUES = [
   { mor: ",", day: ",", evn: "," },  // 17-03-26
   { mor: ",", day: ",", evn: "," },  // 16-03-26
   { mor: ",", day: ",", evn: "," },  // 15-03-26
-  { mor: "9", day: "8", evn: "0" },  // 14-03-26 (এই এন্ট্রিটি এখন দেখাবে)
+  { mor: "9", day: "8", evn: "0" },  // 14-03-26 (এই এন্ট্রিটি এখন প্রথম সারিতে দেখাবে)
   { mor: "2", day: "9", evn: "4" },  // 13-03-26
   { mor: "9", day: "2", evn: "9" },  // 12-03-26
   { mor: "6", day: "2", evn: "0" },  // 11-03-26
@@ -121,7 +121,7 @@ const VALUES = [
   { mor: "7", day: "7", evn: "6" }, // 08-12-25
 ];
 
-// Generate all dates without skipping anything
+// Generate all dates (including placeholders)
 const generateData = () => {
   const startDate = new Date(2026, 2, 31); // 31-03-2026
   const data = [];
@@ -215,17 +215,22 @@ export default function DearDigits() {
   const [searchTerm, setSearchTerm] = useState("");
   const listRef = useRef<any>(null);
   
-  // Generate data - now includes ALL rows
-  const chartData = useMemo(() => generateData(), []);
+  // Generate full data (including placeholders as "-")
+  const fullData = useMemo(() => generateData(), []);
 
-  // Scroll to top on initial load to show latest dates
+  // Filter out rows that are completely empty (all three "-")
+  const chartData = useMemo(() => {
+    return fullData.filter(row => !(row.mor === "-" && row.day === "-" && row.evn === "-"));
+  }, [fullData]);
+
+  // Scroll to top on initial load (now first row is 14-03-26)
   useEffect(() => {
     if (listRef.current) {
-      listRef.current.scrollToItem(0); // Scroll to first row (31-03-26)
+      listRef.current.scrollToItem(0);
     }
   }, []);
 
-  // Calculate statistics (excluding "-" values)
+  // Calculate statistics (only from visible data)
   const stats = useMemo(() => {
     const counts: Record<string, number> = {};
     
@@ -288,7 +293,7 @@ export default function DearDigits() {
         <div className="flex-1">
           <h1 className="text-xl font-bold">Dear : First Prize Last Digit</h1>
           <p className="text-sm opacity-90">
-            Showing {chartData.length} days • Total entries: {totalEntries}
+            Showing {chartData.length} days with data • Total entries: {totalEntries}
           </p>
         </div>
       </header>
@@ -378,10 +383,10 @@ export default function DearDigits() {
                   Enter a digit (0-9) to highlight occurrences. Click on frequency badges to search.
                 </p>
                 <p className="text-sm text-slate-500 mt-1">
-                  Showing all {chartData.length} days from 31-03-26 to 08-12-25
+                  Showing only dates with actual data. Placeholders are hidden until updated.
                 </p>
                 <p className="text-sm font-semibold text-green-600 mt-2">
-                  ✓ 14-03-26 now appears as row 18 (with values 9, 8, 0)
+                  ✓ 14-03-26 now appears as the first row (values: 9, 8, 0)
                 </p>
               </div>
             </div>

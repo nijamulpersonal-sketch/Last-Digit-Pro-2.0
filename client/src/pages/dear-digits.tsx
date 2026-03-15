@@ -1,9 +1,9 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { ChevronLeft, Filter } from "lucide-react";
 import { Link } from "wouter";
 import { FixedSizeList as List } from "react-window";
 
-// Extended VALUES array with 100 days (61 historical + 39 future placeholders)
+// VALUES array with all data (including placeholders)
 const VALUES = [
   { mor: ",", day: ",", evn: "," },  // 31-03-26
   { mor: ",", day: ",", evn: "," },  // 30-03-26
@@ -22,7 +22,7 @@ const VALUES = [
   { mor: ",", day: ",", evn: "," },  // 17-03-26
   { mor: ",", day: ",", evn: "," },  // 16-03-26
   { mor: ",", day: ",", evn: "," },  // 15-03-26
-  { mor: "9", day: "8", evn: "0" },  // 14-03-26
+  { mor: "9", day: "8", evn: "0" },  // 14-03-26 (এই এন্ট্রিটি এখন দেখাবে)
   { mor: "2", day: "9", evn: "4" },  // 13-03-26
   { mor: "9", day: "2", evn: "9" },  // 12-03-26
   { mor: "6", day: "2", evn: "0" },  // 11-03-26
@@ -121,32 +121,34 @@ const VALUES = [
   { mor: "7", day: "7", evn: "6" }, // 08-12-25
 ];
 
-// Generate dates for the days (starting from fixed start date and going backwards)
+// Generate all dates without skipping anything
 const generateData = () => {
-  // Fixed start date: 31-03-2026 (first entry in VALUES array)
-  const startDate = new Date(2026, 2, 31); // Month is 0-based (2 = March)
+  const startDate = new Date(2026, 2, 31); // 31-03-2026
   const data = [];
   
   for (let i = 0; i < VALUES.length; i++) {
-    const date = new Date(startDate);
-    date.setDate(startDate.getDate() - i);
-    const dateStr = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear().toString().slice(-2)}`;
+    const currentDate = new Date(startDate);
+    currentDate.setDate(startDate.getDate() - i);
+    
+    const dateStr = `${currentDate.getDate().toString().padStart(2, '0')}-${
+      (currentDate.getMonth() + 1).toString().padStart(2, '0')}-${
+      currentDate.getFullYear().toString().slice(-2)}`;
     
     const value = VALUES[i];
     
-    // Always push the row – placeholders will be rendered as "-"
+    // Convert empty or "," to "-" for display
     data.push({
       date: dateStr,
-      mor: value.mor || "-",
-      day: value.day || "-",
-      evn: value.evn || "-"
+      mor: (value.mor === "," || value.mor === "") ? "-" : (value.mor || "-"),
+      day: (value.day === "," || value.day === "") ? "-" : (value.day || "-"),
+      evn: (value.evn === "," || value.evn === "") ? "-" : (value.evn || "-")
     });
   }
   
   return data;
 };
 
-// Memoized row component for virtualized list
+// Row component
 const Row = React.memo(({ index, style, data }: {
   index: number;
   style: React.CSSProperties;
@@ -156,7 +158,7 @@ const Row = React.memo(({ index, style, data }: {
   const row = rows[index];
 
   const isHighlighted = (val: string) => {
-    if (!searchTerm || val === "-" || val === "" || val === "." || val === ",") return false;
+    if (!searchTerm || val === "-") return false;
     return val === searchTerm;
   };
 
@@ -168,35 +170,37 @@ const Row = React.memo(({ index, style, data }: {
       <div className={`py-2.5 border-r border-slate-200 font-bold transition-colors duration-200 ${
         isHighlighted(row.mor) ? 'bg-yellow-300 text-slate-900' : 'text-slate-800'
       }`}>
-        {row.mor === "," ? "-" : (row.mor || "-")}
+        {row.mor}
       </div>
       <div className={`py-2.5 border-r border-slate-200 font-bold transition-colors duration-200 ${
         isHighlighted(row.day) ? 'bg-yellow-300 text-slate-900' : 'text-slate-800'
       }`}>
-        {row.day === "," ? "-" : (row.day || "-")}
+        {row.day}
       </div>
       <div className={`py-2.5 font-bold transition-colors duration-200 ${
         isHighlighted(row.evn) ? 'bg-yellow-300 text-slate-900' : 'text-slate-800'
       }`}>
-        {row.evn === "," ? "-" : (row.evn || "-")}
+        {row.evn}
       </div>
     </div>
   );
 });
 
-// Virtual scroll component using react-window
-const VirtualTable = ({ data, searchTerm }: { 
+// Virtual Table component
+const VirtualTable = ({ data, searchTerm, listRef }: { 
   data: Array<{date: string, mor: string, day: string, evn: string}>, 
-  searchTerm: string
+  searchTerm: string,
+  listRef: React.RefObject<any>
 }) => {
   const itemData = useMemo(() => ({ rows: data, searchTerm }), [data, searchTerm]);
 
   return (
     <div className="h-[600px]">
       <List
+        ref={listRef}
         height={600}
         itemCount={data.length}
-        itemSize={44} // fixed row height (py-2.5 + border)
+        itemSize={44}
         width="100%"
         itemData={itemData}
       >
@@ -206,20 +210,28 @@ const VirtualTable = ({ data, searchTerm }: {
   );
 };
 
+// Main component
 export default function DearDigits() {
   const [searchTerm, setSearchTerm] = useState("");
-
-  // Generate the data – now includes all rows, placeholders become "-"
+  const listRef = useRef<any>(null);
+  
+  // Generate data - now includes ALL rows
   const chartData = useMemo(() => generateData(), []);
 
-  // Count occurrences for stats (exclude placeholder values)
+  // Scroll to top on initial load to show latest dates
+  useEffect(() => {
+    if (listRef.current) {
+      listRef.current.scrollToItem(0); // Scroll to first row (31-03-26)
+    }
+  }, []);
+
+  // Calculate statistics (excluding "-" values)
   const stats = useMemo(() => {
     const counts: Record<string, number> = {};
     
     chartData.forEach(row => {
       [row.mor, row.day, row.evn].forEach(val => {
-        // Skip placeholder values (",") and empty/dash values
-        if (val && val !== "-" && val !== "." && val !== "" && val !== ",") {
+        if (val && val !== "-") {
           counts[val] = (counts[val] || 0) + 1;
         }
       });
@@ -228,12 +240,11 @@ export default function DearDigits() {
     return counts;
   }, [chartData]);
 
-  // Calculate total entries (only from visible data)
   const totalEntries = useMemo(() => {
     return Object.values(stats).reduce((a, b) => a + b, 0);
   }, [stats]);
 
-  // Memoized event handlers
+  // Event handlers
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value.slice(0, 1));
   }, []);
@@ -249,9 +260,9 @@ export default function DearDigits() {
       ...chartData.map(row => 
         [
           row.date, 
-          row.mor === "," ? "" : (row.mor || ""), 
-          row.day === "," ? "" : (row.day || ""), 
-          row.evn === "," ? "" : (row.evn || "")
+          row.mor === "-" ? "" : row.mor,
+          row.day === "-" ? "" : row.day,
+          row.evn === "-" ? "" : row.evn
         ].join(",")
       )
     ].join("\n");
@@ -277,7 +288,7 @@ export default function DearDigits() {
         <div className="flex-1">
           <h1 className="text-xl font-bold">Dear : First Prize Last Digit</h1>
           <p className="text-sm opacity-90">
-            Showing {chartData.length} days of data • Total entries: {totalEntries}
+            Showing {chartData.length} days • Total entries: {totalEntries}
           </p>
         </div>
       </header>
@@ -313,7 +324,6 @@ export default function DearDigits() {
               {searchTerm && (
                 <div className="mt-2 text-sm text-slate-600">
                   <span className="font-semibold">Digit "{searchTerm}" appears {stats[searchTerm] || 0} times</span>
-                  {" "}in {chartData.length} days
                 </div>
               )}
             </div>
@@ -354,10 +364,11 @@ export default function DearDigits() {
           <VirtualTable 
             data={chartData} 
             searchTerm={searchTerm}
+            listRef={listRef}
           />
         </div>
 
-        {/* Instructions and Export Options */}
+        {/* Instructions */}
         <div className="bg-white p-4 rounded-lg border border-slate-200">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="flex gap-3 items-start">
@@ -367,7 +378,10 @@ export default function DearDigits() {
                   Enter a digit (0-9) to highlight occurrences. Click on frequency badges to search.
                 </p>
                 <p className="text-sm text-slate-500 mt-1">
-                  Showing all historical data
+                  Showing all {chartData.length} days from 31-03-26 to 08-12-25
+                </p>
+                <p className="text-sm font-semibold text-green-600 mt-2">
+                  ✓ 14-03-26 now appears as row 18 (with values 9, 8, 0)
                 </p>
               </div>
             </div>
@@ -378,6 +392,12 @@ export default function DearDigits() {
                 className="px-4 py-2 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
               >
                 Export CSV
+              </button>
+              <button
+                onClick={() => listRef.current?.scrollToItem(0)}
+                className="px-4 py-2 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+              >
+                Scroll to Top
               </button>
             </div>
           </div>

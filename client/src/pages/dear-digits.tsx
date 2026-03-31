@@ -5,7 +5,7 @@ import { Link } from "wouter";
 // Extended VALUES array with 100 days (61 historical + 39 future placeholders)
 const VALUES = [
   { mor: ",", day: ",", evn: "," },  // 31-03-26
-  { mor: ",", day: ",", evn: "," },  // 30-03-26
+  { mor: "5", day: "7", evn: "3" },  // 30-03-26
   { mor: "2", day: "3", evn: "3" },  // 29-03-26
   { mor: "6", day: "0", evn: "6" },  // 28-03-26
   { mor: "0", day: "6", evn: "4" },  // 27-03-26

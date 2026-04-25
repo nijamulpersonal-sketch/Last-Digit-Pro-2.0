@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { ChevronLeft, Filter } from "lucide-react";
 import { Link } from "wouter";
 
-// New VALUES array (replaces old one)
+// নতুন VALUES অ্যারে (আপনি যেটা দিয়েছেন)
 const VALUES = [
   { mor: "", day: "", evn: "" }, // 09-07-26
   { mor: "", day: "", evn: "" }, // 08-07-26
@@ -13,6 +13,7 @@ const VALUES = [
   { mor: "", day: "", evn: "" }, // 03-07-26
   { mor: "", day: "", evn: "" }, // 02-07-26
   { mor: "", day: "", evn: "" }, // 01-07-26
+
   { mor: "", day: "", evn: "" }, // 30-06-26
   { mor: "", day: "", evn: "" }, // 29-06-26
   { mor: "", day: "", evn: "" }, // 28-06-26
@@ -43,12 +44,14 @@ const VALUES = [
   { mor: "", day: "", evn: "" }, // 03-06-26
   { mor: "", day: "", evn: "" }, // 02-06-26
   { mor: "", day: "", evn: "" }, // 01-06-26
-   {mor: "", day: "", evn: "" }, // 31-05-26
+
+  { mor: "", day: "", evn: "" }, // 31-05-26
   { mor: "", day: "", evn: "" }, // 30-05-26
   { mor: "", day: "", evn: "" }, // 29-05-26
   { mor: "", day: "", evn: "" }, // 28-05-26
   { mor: "", day: "", evn: "" }, // 27-05-26
   { mor: "", day: "", evn: "" }, // 26-05-26
+
   { mor: "", day: "", evn: "" }, // 25-04-26
   { mor: "5", day: "0", evn: "7" }, // 24-04-26
   { mor: "7", day: "7", evn: "9" }, // 23-04-26
@@ -76,41 +79,41 @@ const VALUES = [
   { mor: "6", day: "1", evn: "8" }, // 01-04-26
 ];
 
-// Generate dates for the days (starting from 09-07-2026 and going backwards)
+// ডেটা জেনারেট করার ফাংশন (শুধু অ-খালি সারি দেখাবে)
 const generateData = () => {
-  // Start date: 09-07-2026 (first entry in VALUES array)
-  const startDate = new Date(2026, 6, 9); // Month is 0-based (6 = July)
+  const startDate = new Date(2026, 6, 9); // ৯ জুলাই ২০২৬
   const data = [];
-  
+
   for (let i = 0; i < VALUES.length; i++) {
     const date = new Date(startDate);
     date.setDate(startDate.getDate() - i);
-    const dateStr = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear().toString().slice(-2)}`;
-    
+    const dateStr = `${date.getDate().toString().padStart(2, "0")}-${(date.getMonth() + 1).toString().padStart(2, "0")}-${date.getFullYear().toString().slice(-2)}`;
+
     const value = VALUES[i];
-    // Check if this is a placeholder row (all three values are ",")
-    const isPlaceholder = value.mor === "," && value.day === "," && value.evn === ",";
-    
-    // Skip placeholder rows completely
-    if (isPlaceholder) {
-      continue;
+
+    // তিনটি ফিল্ডই খালি কিনা পরীক্ষা
+    const isEmpty = (val: string | undefined) => !val || val === "" || val === ",";
+    const allEmpty = isEmpty(value.mor) && isEmpty(value.day) && isEmpty(value.evn);
+
+    if (allEmpty) {
+      continue; // পুরো সারি বাদ দিন
     }
-    
+
     data.push({
       date: dateStr,
       mor: value.mor || "-",
       day: value.day || "-",
-      evn: value.evn || "-"
+      evn: value.evn || "-",
     });
   }
-  
+
   return data;
 };
 
-// Virtual scroll component for performance
+// ভার্চুয়াল টেবিল কম্পোনেন্ট (অপরিবর্তিত)
 const VirtualTable = ({ data, searchTerm }: { 
   data: Array<{date: string, mor: string, day: string, evn: string}>, 
-  searchTerm: string
+  searchTerm: string 
 }) => {
   const isHighlighted = useCallback((val: string) => {
     if (!searchTerm || val === "-" || val === "" || val === "." || val === ",") return false;
@@ -125,19 +128,16 @@ const VirtualTable = ({ data, searchTerm }: {
             <div className="py-2.5 bg-[#e1eaf1] text-slate-700 font-medium border-r border-slate-200 sticky left-0">
               {row.date}
             </div>
-            
             <div className={`py-2.5 border-r border-slate-200 font-bold transition-colors duration-200 ${
               isHighlighted(row.mor) ? 'bg-yellow-300 text-slate-900' : 'text-slate-800'
             }`}>
               {row.mor === "," ? "-" : (row.mor || "-")}
             </div>
-            
             <div className={`py-2.5 border-r border-slate-200 font-bold transition-colors duration-200 ${
               isHighlighted(row.day) ? 'bg-yellow-300 text-slate-900' : 'text-slate-800'
             }`}>
               {row.day === "," ? "-" : (row.day || "-")}
             </div>
-            
             <div className={`py-2.5 font-bold transition-colors duration-200 ${
               isHighlighted(row.evn) ? 'bg-yellow-300 text-slate-900' : 'text-slate-800'
             }`}>
@@ -150,36 +150,30 @@ const VirtualTable = ({ data, searchTerm }: {
   );
 };
 
+// মূল কম্পোনেন্ট
 export default function DearDigits() {
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Generate the data (placeholder rows are already filtered out)
   const chartData = useMemo(() => generateData(), []);
 
-  // Count occurrences for stats (exclude placeholder values)
   const stats = useMemo(() => {
     const counts: Record<string, number> = {};
-    
     chartData.forEach(row => {
       [row.mor, row.day, row.evn].forEach(val => {
-        // Skip placeholder values (",") and empty/dash values
         if (val && val !== "-" && val !== "." && val !== "" && val !== ",") {
           counts[val] = (counts[val] || 0) + 1;
         }
       });
     });
-    
     return counts;
   }, [chartData]);
 
-  // Calculate total entries (only from visible data)
   const totalEntries = useMemo(() => {
     return Object.values(stats).reduce((a, b) => a + b, 0);
   }, [stats]);
 
   return (
     <div className="min-h-screen bg-slate-50 pb-10">
-      {/* Header */}
       <header className="bg-[#d53369] text-white p-4 flex items-center gap-4 shadow-md sticky top-0 z-20">
         <Link href="/">
           <button className="p-1 hover:bg-white/10 rounded-full transition-colors">
@@ -195,7 +189,6 @@ export default function DearDigits() {
       </header>
 
       <div className="max-w-6xl mx-auto p-4 space-y-4">
-        {/* Controls */}
         <div className="bg-white p-4 rounded-lg shadow-sm border border-slate-200">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
@@ -221,7 +214,6 @@ export default function DearDigits() {
                   )}
                 </div>
               </div>
-              
               {searchTerm && (
                 <div className="mt-2 text-sm text-slate-600">
                   <span className="font-semibold">Digit "{searchTerm}" appears {stats[searchTerm] || 0} times</span>
@@ -230,8 +222,7 @@ export default function DearDigits() {
               )}
             </div>
           </div>
-          
-          {/* Digit Frequency Stats */}
+
           <div className="mt-4 pt-4 border-t border-slate-200">
             <h3 className="text-sm font-semibold text-slate-700 mb-2">Digit Frequency:</h3>
             <div className="flex flex-wrap gap-2">
@@ -254,7 +245,6 @@ export default function DearDigits() {
           </div>
         </div>
 
-        {/* Table */}
         <div className="bg-white rounded shadow-sm overflow-hidden border border-slate-200">
           <div className="grid grid-cols-4 bg-[#4caf50] text-white font-bold text-center sticky top-0 z-10">
             <div className="py-2.5 border-r border-white/20">DATE</div>
@@ -262,14 +252,9 @@ export default function DearDigits() {
             <div className="py-2.5 border-r border-white/20">DAY</div>
             <div className="py-2.5">EVENING</div>
           </div>
-
-          <VirtualTable 
-            data={chartData} 
-            searchTerm={searchTerm}
-          />
+          <VirtualTable data={chartData} searchTerm={searchTerm} />
         </div>
 
-        {/* Instructions and Export Options */}
         <div className="bg-white p-4 rounded-lg border border-slate-200">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div className="flex gap-3 items-start">
@@ -279,15 +264,13 @@ export default function DearDigits() {
                   Enter a digit (0-9) to highlight occurrences. Click on frequency badges to search.
                 </p>
                 <p className="text-sm text-slate-500 mt-1">
-                  Showing all historical data
+                  Showing all historical data (empty days hidden automatically)
                 </p>
               </div>
             </div>
-            
             <div className="flex gap-2">
               <button
                 onClick={() => {
-                  // Export as CSV functionality - only exports visible rows
                   const headers = ["Date", "Morning", "Day", "Evening"];
                   const csvContent = [
                     headers.join(","),
@@ -300,7 +283,6 @@ export default function DearDigits() {
                       ].join(",")
                     )
                   ].join("\n");
-                  
                   const blob = new Blob([csvContent], { type: "text/csv" });
                   const url = window.URL.createObjectURL(blob);
                   const a = document.createElement("a");

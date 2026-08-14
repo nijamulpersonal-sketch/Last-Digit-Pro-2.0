@@ -1,279 +1,650 @@
-import { useState, useEffect } from "react";
-import {
-  ShieldCheck,
-  Clock,
-  Crown,
-  Search,
-  TrendingUp,
-  FileText,
-  Settings,
-  Lock,
-  MessageSquare,
-  Users,
-  Home as HomeIcon,
-  History,
-  CheckCircle,
-  Send
-} from "lucide-react";
-import { useLocation } from "wouter";
-import { PrivacyPolicyModal } from "@/components/modals/privacy-policy-modal";
-import { SubscriptionModal } from "@/components/modals/subscription-modal";
-import { SettingsModal } from "@/components/modals/settings-modal";
-import { ChatBotModal } from "@/components/modals/chatbot-modal";
-import { HistoryModal } from "@/components/modals/history-modal";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>LAST DIGIT PRO · Premium</title>
+    <!-- Google Fonts: Inter for modern, clean typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+    <style>
+        /* ===== RESET & BASE ===== */
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-export default function Home() {
-  const [location, setLocation] = useLocation();
-  const [showPrivacy, setShowPrivacy] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showSubscription, setShowSubscription] = useState(false);
-  const [showChatBot, setShowChatBot] = useState(false);
-  const [showHistory, setShowHistory] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<'first-time' | 'regular' | null>(null);
-  const [activeUsers, setActiveUsers] = useState(124);
+        body {
+            background: #0e0d12;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            padding: 20px;
+            margin: 0;
+        }
 
-  useEffect(() => {
-    const updateActiveUsers = () => {    
-      const now = new Date();    
-      const hour = now.getHours();    
-      const minute = now.getMinutes();    
-      let min = 10, max = 150;    
+        /* ===== PHONE FRAME ===== */
+        .phone-frame {
+            width: 390px;
+            max-width: 100%;
+            background: #131218;
+            border-radius: 48px;
+            padding: 18px 16px 10px;
+            box-shadow:
+                0 30px 80px rgba(0, 0, 0, 0.8),
+                0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+                0 0 0 1px rgba(255, 255, 255, 0.02);
+            position: relative;
+            transition: all 0.2s ease;
+        }
 
-      if (hour === 12 && minute <= 56) {    
-        min = 350; max = 500;    
-      } else if ((hour === 17 && minute >= 30) || (hour >= 18 && hour < 20)) {    
-        min = 350; max = 500;    
-      } else if (hour >= 20 || hour < 12) {    
-        min = 10; max = 40;    
-      } else {    
-        min = 50; max = 200;    
-      }    
+        /* subtle inner glow */
+        .phone-frame::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 48px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, transparent 60%);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
 
-      const randomUsers = Math.floor(Math.random() * (max - min + 1)) + min;    
-      setActiveUsers(randomUsers);    
-    };    
+        /* ===== STATUS BAR (simulated) ===== */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 4px 14px 4px;
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+        }
+        .status-bar .time {
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .status-icons {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .status-icons svg {
+            opacity: 0.65;
+        }
 
-    updateActiveUsers();    
-    const interval = setInterval(updateActiveUsers, 5000);   
-    return () => clearInterval(interval);
+        /* ===== HEADER ===== */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2px 0 14px 0;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(145deg, #f5b042, #e8922e);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 16px;
+            color: #131218;
+            box-shadow: 0 4px 12px rgba(232, 146, 46, 0.3);
+        }
+        .brand-text {
+            font-weight: 700;
+            font-size: 20px;
+            letter-spacing: -0.3px;
+            color: #ffffff;
+            background: linear-gradient(135deg, #ffffff 60%, rgba(255, 255, 255, 0.7));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .brand-text span {
+            font-weight: 300;
+            color: rgba(255, 255, 255, 0.35);
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.35);
+        }
 
-  }, [location, setLocation]);
+        .header-actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .header-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: default;
+            transition: all 0.2s;
+            backdrop-filter: blur(4px);
+        }
+        .header-btn svg {
+            opacity: 0.8;
+        }
 
-  const handlePlanSelect = (plan: 'first-time' | 'regular') => {
-    setSelectedPlan(plan);
-    setShowSubscription(true);
-  };
+        /* ===== LIVE USER STRIP ===== */
+        .live-strip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            padding: 10px 14px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 16px;
+            backdrop-filter: blur(4px);
+        }
+        .live-strip-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #34d399;
+            box-shadow: 0 0 12px rgba(52, 211, 153, 0.4);
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(0.85);
+            }
+        }
+        .live-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.8);
+            letter-spacing: 0.2px;
+        }
+        .live-label strong {
+            font-weight: 600;
+            color: #ffffff;
+        }
+        .live-count {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.35);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .live-count .num {
+            color: #ffffff;
+            font-weight: 600;
+        }
 
-  const handleSettingsOpen = () => setShowSettings(true);
-  const handleSettingsClose = () => setShowSettings(false);
+        /* ===== SECURE / LIVE UPDATES STRIP ===== */
+        .info-strip {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 14px;
+            padding: 10px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .info-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .info-badge svg {
+            opacity: 0.6;
+        }
+        .info-badge .highlight {
+            color: #f5b042;
+            font-weight: 600;
+        }
+        .info-divider {
+            width: 1px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .info-update {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 500;
+        }
+        .info-update .live-badge {
+            background: rgba(52, 211, 153, 0.12);
+            color: #34d399;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            border: 1px solid rgba(52, 211, 153, 0.15);
+        }
 
-  const handlePrivacyOpen = () => {
-    setShowSettings(false);
-    setTimeout(() => setShowPrivacy(true), 100);
-  };
-  const handlePrivacyClose = () => setShowPrivacy(false);
+        /* ===== FEATURE GRID ===== */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
 
-  return (
-    <div className="min-h-screen pb-16 bg-slate-900 selection:bg-amber-500/30">
-      <div className="max-w-md mx-auto px-4 pt-4">    
-        <div className="text-center mb-6">    
-          <div className="flex justify-between items-center mb-4">    
-            <div className="flex items-center gap-2">    
-              <h1 className="text-xl font-black bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-600 bg-clip-text text-transparent tracking-tighter">    
-                LAST DIGIT PRO    
-              </h1>    
-            </div>    
+        .feature-card {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 20px;
+            padding: 18px 16px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(4px);
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+            min-height: 110px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.02), transparent 70%);
+            pointer-events: none;
+            border-radius: 0 20px 0 80px;
+        }
+        .feature-card .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .feature-card .card-icon svg {
+            opacity: 0.85;
+        }
+        .feature-card .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.2px;
+            margin-bottom: 4px;
+        }
+        .feature-card .card-desc {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.35);
+            font-weight: 400;
+            line-height: 1.4;
+        }
+        .feature-card .card-eta {
+            font-size: 10px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.2);
+            margin-top: 8px;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
 
-            <div className="flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full animate-pulse">    
-              <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />    
-              <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest flex items-center gap-1">    
-                <Users className="w-3 h-3" />    
-                {activeUsers} Live    
-              </span>    
-            </div>    
-          </div>    
+        /* special card: Lucky Search */
+        .feature-card.lucky {
+            background: linear-gradient(145deg, rgba(245, 176, 66, 0.08), rgba(232, 146, 46, 0.02));
+            border-color: rgba(245, 176, 66, 0.12);
+        }
+        .feature-card.lucky .card-icon {
+            background: rgba(245, 176, 66, 0.12);
+            border-color: rgba(245, 176, 66, 0.15);
+        }
+        .feature-card.lucky .card-title {
+            color: #f5b042;
+        }
 
-          <div className="glass rounded-2xl px-4 py-3 mb-2 gold-glow border-amber-400/20">    
-            <div className="flex justify-center items-center gap-2">    
-              <div className="flex items-center">    
-                <ShieldCheck className="w-3 h-3 text-emerald-400 mr-1" />    
-                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Secure</span>    
-              </div>    
-              <div className="w-1 h-1 bg-gray-600 rounded-full"></div>    
-              <div className="flex items-center">    
-                <Clock className="w-3 h-3 text-amber-400 mr-1" />    
-                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Live Updates</span>    
-              </div>    
-            </div>    
-          </div>    
-        </div>    
+        /* special card: Dear Digits */
+        .feature-card.digits {
+            background: linear-gradient(145deg, rgba(99, 102, 241, 0.06), rgba(99, 102, 241, 0.01));
+            border-color: rgba(99, 102, 241, 0.08);
+        }
+        .feature-card.digits .card-icon {
+            background: rgba(99, 102, 241, 0.10);
+            border-color: rgba(99, 102, 241, 0.12);
+        }
+        .feature-card.digits .card-title {
+            color: #a5b4fc;
+        }
 
-        <div className="relative overflow-hidden glass-dark rounded-[1.5rem] p-4 mb-6 border border-white/10 shadow-[0_0_20px_rgba(251,191,36,0.1)]">    
-          <div className="absolute -inset-full h-[300%] w-[300%] bg-[linear-gradient(45deg,transparent_25%,rgba(255,255,255,0.05)_50%,transparent_75%)] animate-[shimmer_5s_infinite] pointer-events-none"></div>    
-          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 blur-[40px] -z-10"></div>    
-          <div className="flex items-center gap-2 mb-4 relative z-10">    
-            <div className="p-2 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl shadow-lg shadow-amber-500/20">    
-              <Crown className="w-5 h-5 text-white" />    
-            </div>    
-            <div>    
-              <h2 className="text-lg font-bold text-white tracking-tight leading-none mb-0.5">Subscription Plans</h2>    
-              <p className="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Choose your plan</p>    
-            </div>    
-          </div>    
-          <div className="flex flex-col gap-3 mb-6 relative z-10 px-2">    
-            <div     
-              onClick={() => handlePlanSelect('regular')}    
-              className="relative overflow-hidden bg-slate-950 border border-amber-500/30 rounded-[1.5rem] p-4 cursor-pointer hover:border-amber-400/60 transition-all duration-500 text-center group shadow-xl"    
-            >    
-              {/* Subtle Ambient Glow */}  
-              <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 blur-lg opacity-30 group-hover:opacity-60 transition-opacity"></div>  
-                
-              <div className="absolute top-3 right-3">  
-                <div className="bg-gradient-to-r from-amber-400 to-yellow-600 text-slate-950 text-[7px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter shadow-md">  
-                  Best Seller  
-                </div>  
-              </div>  
+        /* ===== FULL-WIDTH FEATURE: Lottery Fax ===== */
+        .lottery-fax {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 20px;
+            padding: 18px 18px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            margin-bottom: 16px;
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+        .lottery-fax::after {
+            content: '';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 120px;
+            height: 120px;
+            background: radial-gradient(circle, rgba(245, 176, 66, 0.04), transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .lottery-fax-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            z-index: 1;
+        }
+        .lottery-fax-left .fax-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .lottery-fax-left .fax-text .fax-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.2px;
+        }
+        .lottery-fax-left .fax-text .fax-desc {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.35);
+            margin-top: 2px;
+        }
+        .lottery-fax .fax-badge {
+            background: rgba(245, 176, 66, 0.10);
+            border: 1px solid rgba(245, 176, 66, 0.12);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #f5b042;
+            letter-spacing: 0.2px;
+            z-index: 1;
+            white-space: nowrap;
+        }
 
-              <div className="relative z-10 flex items-center justify-between gap-4">  
-                <div className="text-left">  
-                  <div className="flex items-center gap-1.5 mb-1">  
-                    <Crown className="w-3 h-3 text-amber-500" />  
-                    <span className="text-[9px] text-amber-400 font-black uppercase tracking-widest">VIP Access</span>  
-                  </div>  
-                  <div className="flex items-center gap-2">  
-                    <span className="text-[10px] text-gray-500 line-through">₹899</span>  
-                    <span className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white to-amber-500">₹99</span>  
-                  </div>  
-                </div>  
+        /* ===== SETTINGS PREVIEW (mini) ===== */
+        .settings-preview {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 20px;
+            padding: 14px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            margin-bottom: 16px;
+            backdrop-filter: blur(4px);
+            cursor: default;
+        }
+        .settings-preview-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .settings-preview-left .set-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .settings-preview-left .set-text .set-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.2px;
+        }
+        .settings-preview-left .set-text .set-desc {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.3);
+        }
+        .settings-preview .set-arrow {
+            color: rgba(255, 255, 255, 0.15);
+        }
 
-                <div className="flex flex-col items-end gap-1">  
-                  <div className="px-2 py-0.5 bg-emerald-500/10 rounded-md border border-emerald-500/20">  
-                    <span className="text-[8px] text-emerald-400 font-black uppercase tracking-tighter">90% OFF</span>  
-                  </div>  
-                  <span className="text-[8px] text-gray-400 font-bold uppercase tracking-tight italic">30 Days Valid</span>  
-                </div>  
-              </div>  
+        /* ===== 100% REFUND GUARANTEE ===== */
+        .refund-section {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.005));
+            border-radius: 20px;
+            padding: 16px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            backdrop-filter: blur(4px);
+            position: relative;
+            overflow: hidden;
+        }
+        .refund-section::before {
+            content: '';
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 160px;
+            height: 160px;
+            background: radial-gradient(circle, rgba(52, 211, 153, 0.04), transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .refund-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: rgba(52, 211, 153, 0.06);
+            border: 1px solid rgba(52, 211, 153, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            z-index: 1;
+        }
+        .refund-text {
+            z-index: 1;
+        }
+        .refund-text .refund-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.2px;
+        }
+        .refund-text .refund-desc {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.3);
+            margin-top: 2px;
+        }
+        .refund-badge {
+            margin-left: auto;
+            background: rgba(52, 211, 153, 0.08);
+            border: 1px solid rgba(52, 211, 153, 0.08);
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #34d399;
+            letter-spacing: 0.3px;
+            z-index: 1;
+            white-space: nowrap;
+        }
 
-              {/* Shimmer Effect */}  
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>  
-            </div>    
-          </div>    
-          <div className="flex gap-1.5 mb-3 relative z-10">    
-            {['01:00 PM', '06:00 PM', '08:00 PM'].map((time) => (    
-              <div key={time} className="flex-1 py-1.5 rounded-lg bg-white/[0.03] border border-white/5 text-emerald-400 font-bold text-[9px] text-center shadow-inner">    
-                {time}    
-              </div>    
-            ))}    
-          </div>    
-          <button     
-            onClick={() => handlePlanSelect('first-time')}    
-            className="relative w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-600 text-slate-900 font-black text-xs shadow-[0_4px_15_rgba(251,191,36,0.2)] hover:shadow-[0_6px_20px_rgba(251,191,36,0.4)] active:scale-[0.98] transition-all duration-300 uppercase tracking-widest overflow-hidden group"    
-          >    
-            <span className="relative z-10">Unlock VIP Access</span>    
-          </button>    
-        </div>    
+        /* ===== BOTTOM NAVIGATION ===== */
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px 4px 6px;
+            margin-top: 4px;
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+            position: relative;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: default;
+            padding: 4px 16px;
+            border-radius: 16px;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .nav-item .nav-icon {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.25);
+            transition: all 0.3s;
+        }
+        .nav-item .nav-label {
+            font-size: 10px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.2);
+            letter-spacing: 0.2px;
+            transition: all 0.3s;
+        }
+        .nav-item.active .nav-icon {
+            color: #f5b042;
+        }
+        .nav-item.active .nav-label {
+            color: #f5b042;
+            font-weight: 600;
+        }
+        .nav-item.active::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 2.5px;
+            border-radius: 4px;
+            background: #f5b042;
+            box-shadow: 0 0 16px rgba(245, 176, 66, 0.3);
+        }
+        .nav-item:not(.active):hover .nav-icon {
+            color: rgba(255, 255, 255, 0.45);
+        }
+        .nav-item:not(.active):hover .nav-label {
+            color: rgba(255, 255, 255, 0.35);
+        }
 
-        <div className="grid grid-cols-2 gap-4 mb-8">    
-          <div onClick={() => setLocation('/lucky-search')} className="glass card-hover rounded-2xl p-4 cursor-pointer relative group">    
-            <div className="absolute top-3 right-3"><Lock className="w-4 h-4 text-amber-400" /></div>    
-            <div className="flex items-center gap-3 mb-2">    
-              <div className="bg-gradient-to-br from-purple-500 to-purple-700 p-2 rounded-lg"><Search className="w-5 h-5 text-white" /></div>    
-              <h3 className="font-semibold text-white">Lucky Search</h3>    
-            </div>    
-            <p className="text-xs text-gray-400">VIP prediction tool</p>    
-          </div>    
-          <div onClick={() => setLocation('/dear-digits')} className="glass card-hover rounded-2xl p-4 cursor-pointer">    
-            <div className="flex items-center gap-3 mb-2">    
-              <div className="bg-gradient-to-br from-cyan-500 to-blue-600 p-2 rounded-lg"><TrendingUp className="w-5 h-5 text-white" /></div>    
-              <h3 className="font-semibold text-white">Dear Digits</h3>    
-            </div>    
-            <p className="text-xs text-gray-400">60-day chart analysis</p>    
-          </div>    
-          <div     
-            onClick={() => window.open('https://lotterysambad.one/', '_blank')}    
-            className="glass card-hover rounded-2xl p-4 cursor-pointer"    
-          >    
-            <div className="flex items-center gap-3 mb-2">    
-              <div className="bg-gradient-to-br from-pink-500 to-rose-600 p-2 rounded-lg shadow-lg shadow-rose-500/20">    
-                <FileText className="w-5 h-5 text-white" />    
-              </div>    
-              <h3 className="font-semibold text-white">Lottery Fax</h3>    
-            </div>    
-            <p className="text-xs text-gray-400">Official results archive</p>    
-          </div>    
-          <div onClick={handleSettingsOpen} className="glass card-hover rounded-2xl p-4 cursor-pointer">    
-            <div className="flex items-center gap-3 mb-2">    
-              <div className="bg-gradient-to-br from-gray-500 to-gray-700 p-2 rounded-lg">    
-                <Settings className="w-5 h-5 text-white" />    
-              </div>    
-              <h3 className="font-semibold text-white">Settings</h3>    
-            </div>    
-            <p className="text-xs text-gray-400">App preferences</p>    
-          </div>    
-        </div>    
+        /* ===== SPACING HELPERS ===== */
+        .spacer-4 {
+            height: 4px;
+        }
+        .spacer-8 {
+            height: 8px;
+        }
 
-        <div className="glass rounded-2xl p-5 mb-6 border border-rose-500/30">    
-          <div className="flex items-start gap-3">    
-            <div className="bg-gradient-to-br from-rose-500 to-pink-600 p-2 rounded-full"><ShieldCheck className="w-5 h-5 text-white" /></div>    
-            <div>    
-              <h3 className="font-bold text-white mb-1">100% Refund Guarantee</h3>    
-              <p className="text-sm text-gray-300">Predictions miss, payment refunded.</p>    
-            </div>    
-          </div>    
-        </div>    
-      </div>    
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 420px) {
+            .phone-frame {
+                border-radius: 28px;
+                padding: 14px 12px 8px;
+            }
+            .feature-grid {
+                gap: 10px;
+            }
+            .feature-card {
+                padding: 14px 12px 12px;
+                min-height: 96px;
+            }
+            .brand-text {
+                font-size: 17px;
+            }
+            .live-strip {
+                padding: 8px 12px;
+            }
+            .info-strip {
+                padding: 8px 12px;
+                gap: 10px;
+            }
+            .lottery-fax {
+                padding: 14px 14px 12px;
+            }
+            .settings-preview {
+                padding: 12px 14px;
+            }
+            .refund-section {
+                padding: 14px 14px;
+            }
+            .nav-item {
+                padding: 4px 10px;
+            }
+        }
 
-      {/* ফ্ল্যাট বটম নেভিগেশন বার - ডার্ক নেভি ব্লু গ্রেডিয়েন্ট ব্যাকগ্রাউন্ড */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 border-t border-white/10">
-        <div className="flex items-center justify-around py-3">
-          {/* ১ম বাটন: হোম - গোল্ডেন এম্বার */}
-          <button className="flex flex-col items-center justify-center gap-1 py-1 group/nav relative transition-all active:scale-90">
-            <div className="p-2.5 rounded-2xl bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-600 text-white shadow-[0_8px_25px_-4px_rgba(245,158,11,0.7)] transform transition-transform group-hover/nav:-translate-y-1 group-hover/nav:scale-110 duration-300">
-              <HomeIcon className="w-5 h-5 drop-shadow-lg" />
-            </div>
-            <span className="text-[10px] font-black uppercase tracking-tighter bg-gradient-to-r from-yellow-400 to-amber-500 bg-clip-text text-transparent">Home</span>
-          </button>
-
-          {/* ২য় বাটন: হিস্টরি - রয়্যাল পার্পল */}
-          <button 
-            onClick={() => setShowHistory(true)}
-            className="flex flex-col items-center justify-center gap-1 py-1 opacity-90 hover:opacity-100 transition-all active:scale-90 group/history"
-          >
-            <div className="p-2.5 rounded-2xl bg-gradient-to-br from-purple-600 via-violet-600 to-indigo-700 text-white shadow-[0_8px_25px_-4px_rgba(124,58,237,0.7)] transform transition-transform group-hover/history:-translate-y-1 group-hover/history:scale-110 duration-300">
-              <History className="w-5 h-5 drop-shadow-lg" />
-            </div>
-            <span className="text-[10px] font-black uppercase tracking-tighter bg-gradient-to-r from-purple-400 to-violet-500 bg-clip-text text-transparent">History</span>
-          </button>
-
-          {/* ৩য় বাটন: টেলিগ্রাম - ওশান ব্লু */}
-          <button
-            onClick={() => window.open("https://t.me/NijamulMal", "_blank")}
-            className="flex flex-col items-center justify-center gap-1 py-1 opacity-90 hover:opacity-100 transition-all active:scale-90 group/telegram"
-          >
-            <div className="p-2.5 rounded-2xl bg-gradient-to-br from-cyan-500 via-blue-500 to-sky-600 text-white shadow-[0_8px_25px_-4px_rgba(56,189,248,0.7)] transform transition-transform group-hover/telegram:-translate-y-1 group-hover/telegram:scale-110 duration-300">
-              <Send className="w-5 h-5 drop-shadow-lg" />
-            </div>
-            <span className="text-[10px] font-black uppercase tracking-tighter bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">Support</span>
-          </button>
-
-          {/* ৪র্থ বাটন: সেটিংস - ডার্ম মেটালিক */}
-          <button 
-            onClick={handleSettingsOpen}
-            className="flex flex-col items-center justify-center gap-1 py-1 opacity-90 hover:opacity-100 transition-all active:scale-90 group/settings"
-          >
-            <div className="p-2.5 rounded-2xl bg-gradient-to-br from-gray-700 via-slate-600 to-gray-800 text-white shadow-[0_8px_25px_-4px_rgba(148,163,184,0.5)] transform transition-transform group-hover/settings:-translate-y-1 group-hover/settings:scale-110 duration-300">
-              <Settings className="w-5 h-5 drop-shadow-lg" />
-            </div>
-            <span className="text-[10px] font-black uppercase tracking-tighter bg-gradient-to-r from-slate-400 to-gray-500 bg-clip-text text-transparent">Settings</span>
-          </button>
-        </div>
-      </nav>
-
-      <SettingsModal isOpen={showSettings} onClose={handleSettingsClose} onOpenPrivacy={handlePrivacyOpen} />    
-      <PrivacyPolicyModal isOpen={showPrivacy} onClose={handlePrivacyClose} />    
-      <SubscriptionModal isOpen={showSubscription} onClose={() => setShowSubscription(false)} planType={selectedPlan} />    
-      <ChatBotModal isOpen={showChatBot} onClose={() => setShowChatBot(false)} />    
-      <HistoryModal isOpen={showHistory} onClose={() => setShowHistory(false)} />  
-    </div>
-  );
-}
+        @media (max-width: 360px) {
+            .phone-frame {
+                border-radius: 20px;
+                padding: 10px 8px 6px;
+            }
+            .feature-grid {
+                gap: 8px;
+            }
+            .feature-card {
+                padding: 10px 10px 10px;
+                min-height: 

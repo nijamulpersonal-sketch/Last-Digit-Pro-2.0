@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ShieldCheck,
   Clock,
@@ -16,14 +16,19 @@ import {
   Youtube,
   Wallet,
   Plus,
+  Minus,
   X,
   Sparkles,
   CreditCard,
+  Copy,
+  Check,
 } from "lucide-react";
 import { useLocation } from "wouter";
 
 import { PrivacyPolicyModal } from "@/components/modals/privacy-policy-modal";
 import { SettingsModal } from "@/components/modals/settings-modal";
+
+const COINS_PER_QUANTITY = 11;
 
 export default function Home() {
   const [, setLocation] = useLocation();
@@ -33,19 +38,26 @@ export default function Home() {
 
   const [showOneFigure, setShowOneFigure] = useState(false);
   const [showBalance, setShowBalance] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
 
   const [activeUsers, setActiveUsers] = useState(29);
   const [balance, setBalance] = useState(0);
+
+  const [redeemCode, setRedeemCode] = useState("");
+  const [redeemMessage, setRedeemMessage] = useState("");
+
+  const [quantities, setQuantities] = useState<Record<number, number>>({});
+
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const updateActiveUsers = () => {
       const min = 20;
       const max = 45;
 
-      const users =
-        Math.floor(Math.random() * (max - min + 1)) + min;
-
-      setActiveUsers(users);
+      setActiveUsers(
+        Math.floor(Math.random() * (max - min + 1)) + min
+      );
     };
 
     updateActiveUsers();
@@ -54,6 +66,24 @@ export default function Home() {
 
     return () => clearInterval(interval);
   }, []);
+
+  const selectedDigits = useMemo(() => {
+    return Object.keys(quantities)
+      .map(Number)
+      .filter((digit) => (quantities[digit] || 0) > 0)
+      .sort((a, b) => a - b);
+  }, [quantities]);
+
+  const totalQuantity = useMemo(() => {
+    return selectedDigits.reduce(
+      (total, digit) => total + (quantities[digit] || 0),
+      0
+    );
+  }, [selectedDigits, quantities]);
+
+  const totalCoins = totalQuantity * COINS_PER_QUANTITY;
+
+  const remainingCoins = balance - totalCoins;
 
   const handleSettingsOpen = () => {
     setShowSettings(true);
@@ -77,15 +107,7 @@ export default function Home() {
 
   const openSupport = () => {
     window.open(
-      "https://t.me/NijamulMal",
-      "_blank",
-      "noopener,noreferrer"
-    );
-  };
-
-  const openLotteryFax = () => {
-    window.open(
-      "https://lotterysambad.one/",
+      "https://t.me/NskNijamul",
       "_blank",
       "noopener,noreferrer"
     );
@@ -99,88 +121,193 @@ export default function Home() {
     );
   };
 
-  const addBalance = (amount: number) => {
-    setBalance((current) => current + amount);
-    setShowBalance(false);
+  const openLotteryFax = () => {
+    window.open(
+      "https://lotterysambad.one/",
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+
+  const addQuantity = (digit: number) => {
+    setQuantities((current) => ({
+      ...current,
+      [digit]: (current[digit] || 0) + 1,
+    }));
+  };
+
+  const removeQuantity = (digit: number) => {
+    setQuantities((current) => {
+      const next = { ...current };
+      const currentValue = next[digit] || 0;
+
+      if (currentValue <= 1) {
+        delete next[digit];
+      } else {
+        next[digit] = currentValue - 1;
+      }
+
+      return next;
+    });
+  };
+
+  const redeemDemoCode = () => {
+    const normalized = redeemCode.trim();
+
+    const match = normalized.match(/^OneFigure(100|[1-9][0-9]?)$/i);
+
+    if (!match) {
+      setRedeemMessage(
+        "Invalid code. Use OneFigure1 to OneFigure100."
+      );
+      return;
+    }
+
+    const codeNumber = Number(match[1]);
+
+    if (codeNumber < 1 || codeNumber > 100) {
+      setRedeemMessage("Invalid demo code.");
+      return;
+    }
+
+    const coinsToAdd = codeNumber * 1000;
+
+    setBalance((current) => current + coinsToAdd);
+    setRedeemCode("");
+
+    setRedeemMessage(
+      `${coinsToAdd.toLocaleString()} demo coins added successfully.`
+    );
+  };
+
+  const continueToTelegram = () => {
+    if (totalQuantity <= 0) {
+      return;
+    }
+
+    if (totalCoins > balance) {
+      return;
+    }
+
+    setShowSummary(true);
+  };
+
+  const telegramSummary = useMemo(() => {
+    const lines = selectedDigits.map(
+      (digit) =>
+        `Digit ${digit}: ${quantities[digit]} × ${COINS_PER_QUANTITY} coins`
+    );
+
+    return [
+      "ONE FIGURE SELECTION",
+      "",
+      ...lines,
+      "",
+      `Total Quantity: ${totalQuantity}`,
+      `Total Coins: ${totalCoins}`,
+      `Remaining Balance: ${remainingCoins}`,
+    ].join("\n");
+  }, [
+    selectedDigits,
+    quantities,
+    totalQuantity,
+    totalCoins,
+    remainingCoins,
+  ]);
+
+  const sendToTelegram = () => {
+    const encoded = encodeURIComponent(telegramSummary);
+
+    window.open(
+      `https://t.me/NskNijamul?text=${encoded}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+
+  const copySummary = async () => {
+    try {
+      await navigator.clipboard.writeText(telegramSummary);
+      setCopied(true);
+
+      setTimeout(() => {
+        setCopied(false);
+      }, 1800);
+    } catch {
+      setCopied(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#070b14] text-white selection:bg-amber-500/30 pb-28">
+    <div className="min-h-screen bg-[#070a12] text-white selection:bg-amber-500/30 pb-24">
 
-      {/* =========================================================
-          BACKGROUND
-      ========================================================== */}
+      {/* Background ambience */}
 
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-40 -left-40 w-80 h-80 rounded-full bg-amber-500/[0.04] blur-[100px]" />
+        <div className="absolute -top-32 -left-32 h-72 w-72 rounded-full bg-amber-500/[0.035] blur-[100px]" />
 
-        <div className="absolute top-1/3 -right-40 w-96 h-96 rounded-full bg-indigo-500/[0.04] blur-[120px]" />
+        <div className="absolute top-[38%] -right-40 h-80 w-80 rounded-full bg-indigo-500/[0.035] blur-[110px]" />
 
-        <div className="absolute bottom-0 left-1/3 w-80 h-80 rounded-full bg-emerald-500/[0.03] blur-[100px]" />
+        <div className="absolute bottom-0 left-[30%] h-72 w-72 rounded-full bg-emerald-500/[0.025] blur-[100px]" />
       </div>
 
-      <main className="relative z-10 max-w-md mx-auto px-4 pt-5">
+      <main className="relative z-10 mx-auto max-w-md px-3.5 pt-4">
 
-        {/* =========================================================
+        {/* =====================================================
             HEADER
-        ========================================================== */}
+        ====================================================== */}
 
-        <header className="mb-5">
+        <header className="mb-4">
 
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-2">
 
             <div className="min-w-0">
-              <p className="text-[8px] uppercase tracking-[0.28em] text-white/35 font-semibold mb-1">
+              <p className="mb-1 text-[7px] font-semibold uppercase tracking-[0.25em] text-white/30">
                 Premium Analytics
               </p>
 
-              <h1 className="text-[21px] leading-none font-black tracking-[-0.04em] bg-gradient-to-r from-white via-white to-white/55 bg-clip-text text-transparent">
+              <h1 className="text-[19px] font-black leading-none tracking-[-0.045em] bg-gradient-to-r from-white via-white to-white/50 bg-clip-text text-transparent">
                 LAST DIGIT PRO
               </h1>
             </div>
 
-            {/* BALANCE */}
+            {/* Balance */}
 
             <button
               type="button"
               onClick={() => setShowBalance(true)}
-              className="shrink-0 group flex items-center gap-2 rounded-2xl border border-amber-400/[0.13] bg-amber-400/[0.045] px-2.5 py-2 transition-all active:scale-95"
+              className="flex shrink-0 items-center gap-1.5 rounded-xl border border-amber-400/[0.12] bg-white/[0.035] px-2 py-1.5 shadow-[0_8px_25px_rgba(0,0,0,0.15)] transition active:scale-95"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-amber-300 to-orange-600 shadow-[0_6px_20px_rgba(245,158,11,0.18)]">
-                <Wallet className="h-4 w-4 text-slate-950" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-amber-300 to-orange-600">
+                <Wallet className="h-3.5 w-3.5 text-slate-950" />
               </div>
 
               <div className="text-left">
-                <p className="text-[7px] font-bold uppercase tracking-wider text-white/35">
+                <p className="text-[6px] font-bold uppercase tracking-wider text-white/30">
                   Balance
                 </p>
 
-                <p className="text-[11px] font-black text-white">
-                  ₹{balance.toFixed(2)}
+                <p className="text-[10px] font-black text-white">
+                  {balance.toLocaleString()} C
                 </p>
               </div>
 
-              <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-white/[0.06]">
-                <Plus className="h-3.5 w-3.5 text-amber-400" />
-              </div>
+              <Plus className="h-3 w-3 text-amber-400" />
             </button>
 
           </div>
 
-          {/* LIVE USER */}
+          <div className="mt-2.5 flex justify-end">
+            <div className="flex items-center gap-1.5 rounded-xl border border-emerald-400/[0.09] bg-emerald-400/[0.035] px-2.5 py-1.5">
 
-          <div className="mt-3 flex justify-end">
-            <div className="flex items-center gap-2 px-3 py-2 rounded-2xl bg-emerald-400/[0.05] border border-emerald-400/[0.11]">
-
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-50 animate-ping" />
-
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute h-full w-full animate-ping rounded-full bg-emerald-400 opacity-40" />
+                <span className="relative h-1.5 w-1.5 rounded-full bg-emerald-400" />
               </span>
 
-              <Users className="w-3.5 h-3.5 text-emerald-400" />
+              <Users className="h-3 w-3 text-emerald-400" />
 
-              <span className="text-[9px] font-bold text-emerald-300 tracking-wide">
+              <span className="text-[8px] font-bold tracking-wide text-emerald-300">
                 {activeUsers} LIVE
               </span>
 
@@ -190,30 +317,30 @@ export default function Home() {
         </header>
 
 
-        {/* =========================================================
-            SECURE / LIVE UPDATE STRIP
-        ========================================================== */}
+        {/* =====================================================
+            STATUS STRIP
+        ====================================================== */}
 
-        <section className="mb-5">
+        <section className="mb-3.5">
 
-          <div className="rounded-[22px] border border-white/[0.07] bg-white/[0.025] backdrop-blur-xl px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+          <div className="rounded-[18px] border border-white/[0.065] bg-white/[0.022] px-3.5 py-2.5 backdrop-blur-xl">
 
-            <div className="flex items-center justify-center gap-3">
+            <div className="flex items-center justify-center gap-2.5">
 
               <div className="flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
 
-                <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/55">
+                <span className="text-[8px] font-bold uppercase tracking-[0.14em] text-white/45">
                   Secure
                 </span>
               </div>
 
-              <span className="w-1 h-1 rounded-full bg-white/20" />
+              <span className="h-0.5 w-0.5 rounded-full bg-white/20" />
 
               <div className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-amber-400" />
+                <Clock className="h-3.5 w-3.5 text-amber-400" />
 
-                <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/55">
+                <span className="text-[8px] font-bold uppercase tracking-[0.14em] text-white/45">
                   Live Updates
                 </span>
               </div>
@@ -225,56 +352,54 @@ export default function Home() {
         </section>
 
 
-        {/* =========================================================
-            DASHBOARD OVERVIEW
-        ========================================================== */}
+        {/* =====================================================
+            DASHBOARD
+        ====================================================== */}
 
-        <section className="mb-5">
+        <section className="mb-3.5">
 
-          <div className="relative overflow-hidden rounded-[28px] border border-white/[0.08] bg-gradient-to-br from-white/[0.055] via-white/[0.02] to-transparent p-5 shadow-[0_20px_60px_rgba(0,0,0,0.22)]">
+          <div className="relative overflow-hidden rounded-[22px] border border-white/[0.075] bg-gradient-to-br from-white/[0.045] via-white/[0.018] to-transparent p-3.5 shadow-[0_15px_45px_rgba(0,0,0,0.18)]">
 
-            <div className="absolute -top-20 -right-20 w-48 h-48 rounded-full bg-amber-400/[0.07] blur-[70px]" />
+            <div className="absolute -right-16 -top-16 h-36 w-36 rounded-full bg-amber-400/[0.055] blur-[55px]" />
 
             <div className="relative">
 
-              <div className="flex items-center justify-between mb-5">
+              <div className="mb-3 flex items-center justify-between">
 
                 <div>
-                  <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-white/35 mb-1.5">
+                  <p className="text-[7px] font-bold uppercase tracking-[0.2em] text-white/25">
                     Dashboard
                   </p>
 
-                  <h2 className="text-xl font-bold tracking-tight text-white">
-                    Your Premium Tools
+                  <h2 className="mt-0.5 text-[17px] font-bold tracking-tight text-white">
+                    Premium Tools
                   </h2>
                 </div>
 
-                <div className="flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-300 to-orange-500 shadow-[0_8px_25px_rgba(245,158,11,0.18)]">
-                  <CheckCircle className="w-5 h-5 text-slate-950" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-amber-300 to-orange-500">
+                  <CheckCircle className="h-4 w-4 text-slate-950" />
                 </div>
 
               </div>
 
-              <div className="flex items-center justify-between rounded-2xl border border-white/[0.06] bg-black/20 px-4 py-3">
+              <div className="flex items-center justify-between rounded-xl border border-white/[0.05] bg-black/20 px-3 py-2.5">
 
                 <div>
-                  <p className="text-[9px] uppercase tracking-[0.16em] text-white/35 font-semibold">
+                  <p className="text-[7px] font-semibold uppercase tracking-[0.14em] text-white/25">
                     System Status
                   </p>
 
-                  <p className="mt-1 text-sm font-semibold text-white">
+                  <p className="mt-0.5 text-[11px] font-semibold text-white/80">
                     All systems operational
                   </p>
                 </div>
 
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_9px_rgba(52,211,153,0.5)]" />
 
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.5)]" />
-
-                  <span className="text-[10px] font-bold text-emerald-400">
+                  <span className="text-[7px] font-bold text-emerald-400">
                     ONLINE
                   </span>
-
                 </div>
 
               </div>
@@ -286,151 +411,127 @@ export default function Home() {
         </section>
 
 
-        {/* =========================================================
+        {/* =====================================================
             FEATURE GRID
-        ========================================================== */}
+        ====================================================== */}
 
-        <section className="mb-4">
+        <section className="mb-3.5">
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5">
 
-            {/* =====================================================
-                LUCKY SEARCH
-            ====================================================== */}
+            {/* Lucky Search */}
 
             <button
               type="button"
               onClick={() => setLocation("/lucky-search")}
-              className="group relative overflow-hidden text-left rounded-[24px] border border-violet-400/[0.13] bg-gradient-to-br from-violet-500/[0.08] via-white/[0.025] to-transparent p-4 min-h-[160px] transition-all duration-300 active:scale-[0.98]"
+              className="group relative min-h-[137px] overflow-hidden rounded-[20px] border border-violet-400/[0.11] bg-gradient-to-br from-violet-500/[0.065] via-white/[0.02] to-transparent p-3 text-left transition active:scale-[0.98]"
             >
 
-              <div className="absolute -top-10 -right-10 w-28 h-28 rounded-full bg-violet-500/[0.08] blur-[40px]" />
+              <div className="flex items-start justify-between">
 
-              <div className="relative">
-
-                <div className="flex items-start justify-between">
-
-                  <div className="flex items-center justify-center w-12 h-12 rounded-[17px] bg-gradient-to-br from-violet-500 to-purple-700 shadow-[0_10px_30px_rgba(139,92,246,0.22)]">
-                    <Search className="w-6 h-6 text-white" />
-                  </div>
-
-                  <Lock className="w-4 h-4 text-amber-400/80" />
-
+                <div className="flex h-10 w-10 items-center justify-center rounded-[13px] bg-gradient-to-br from-violet-500 to-purple-700 shadow-[0_8px_22px_rgba(139,92,246,0.18)]">
+                  <Search className="h-5 w-5 text-white" />
                 </div>
 
-                <div className="mt-7">
+                <Lock className="h-3.5 w-3.5 text-amber-400/65" />
 
-                  <h3 className="text-[16px] font-bold text-white tracking-tight">
-                    Lucky Search
-                  </h3>
+              </div>
 
-                  <p className="mt-1 text-[11px] leading-relaxed text-white/40">
-                    VIP prediction tool
-                  </p>
+              <div className="mt-5">
+                <h3 className="text-[13px] font-bold text-white">
+                  Lucky Search
+                </h3>
 
-                </div>
+                <p className="mt-1 text-[9px] text-white/35">
+                  VIP prediction tool
+                </p>
+              </div>
 
-                <div className="mt-3 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.15em] text-violet-300/70">
-                  Explore
-                  <ArrowRight className="w-3 h-3" />
-                </div>
-
+              <div className="mt-2.5 flex items-center gap-1 text-[7px] font-bold uppercase tracking-[0.12em] text-violet-300/65">
+                Explore
+                <ArrowRight className="h-2.5 w-2.5" />
               </div>
 
             </button>
 
 
-            {/* =====================================================
-                DEAR DIGITS
-            ====================================================== */}
+            {/* Dear Digits */}
 
             <button
               type="button"
               onClick={() => setLocation("/dear-digits")}
-              className="group relative overflow-hidden text-left rounded-[24px] border border-blue-400/[0.13] bg-gradient-to-br from-blue-500/[0.08] via-white/[0.025] to-transparent p-4 min-h-[160px] transition-all duration-300 active:scale-[0.98]"
+              className="group relative min-h-[137px] overflow-hidden rounded-[20px] border border-blue-400/[0.11] bg-gradient-to-br from-blue-500/[0.065] via-white/[0.02] to-transparent p-3 text-left transition active:scale-[0.98]"
             >
 
-              <div className="absolute -top-10 -right-10 w-28 h-28 rounded-full bg-blue-500/[0.08] blur-[40px]" />
+              <div className="flex items-start justify-between">
 
-              <div className="relative">
-
-                <div className="flex items-start justify-between">
-
-                  <div className="flex items-center justify-center w-12 h-12 rounded-[17px] bg-gradient-to-br from-cyan-400 to-blue-600 shadow-[0_10px_30px_rgba(14,165,233,0.22)]">
-                    <TrendingUp className="w-6 h-6 text-white" />
-                  </div>
-
-                  <span className="text-[8px] font-bold uppercase tracking-wider text-blue-300/60">
-                    60 Days
-                  </span>
-
+                <div className="flex h-10 w-10 items-center justify-center rounded-[13px] bg-gradient-to-br from-cyan-400 to-blue-600 shadow-[0_8px_22px_rgba(14,165,233,0.18)]">
+                  <TrendingUp className="h-5 w-5 text-white" />
                 </div>
 
-                <div className="mt-7">
+                <span className="text-[7px] font-bold uppercase tracking-wider text-blue-300/55">
+                  60 Days
+                </span>
 
-                  <h3 className="text-[16px] font-bold text-white tracking-tight">
-                    Dear Digits
-                  </h3>
+              </div>
 
-                  <p className="mt-1 text-[11px] leading-relaxed text-white/40">
-                    60-day chart analysis
-                  </p>
+              <div className="mt-5">
+                <h3 className="text-[13px] font-bold text-white">
+                  Dear Digits
+                </h3>
 
-                </div>
+                <p className="mt-1 text-[9px] text-white/35">
+                  60-day chart analysis
+                </p>
+              </div>
 
-                <div className="mt-3 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.15em] text-blue-300/70">
-                  Analyze
-                  <ArrowRight className="w-3 h-3" />
-                </div>
-
+              <div className="mt-2.5 flex items-center gap-1 text-[7px] font-bold uppercase tracking-[0.12em] text-blue-300/65">
+                Analyze
+                <ArrowRight className="h-2.5 w-2.5" />
               </div>
 
             </button>
 
 
-            {/* =====================================================
-                ONE FIGURE
-            ====================================================== */}
+            {/* One Figure */}
 
             <button
               type="button"
               onClick={() => setShowOneFigure(true)}
-              className="group relative overflow-hidden text-left rounded-[24px] border border-amber-400/[0.14] bg-gradient-to-br from-amber-500/[0.09] via-white/[0.025] to-transparent p-4 min-h-[160px] transition-all duration-300 active:scale-[0.98]"
+              className="group relative min-h-[137px] overflow-hidden rounded-[20px] border border-amber-400/[0.13] bg-gradient-to-br from-amber-500/[0.075] via-white/[0.02] to-transparent p-3 text-left transition active:scale-[0.98]"
             >
 
-              <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-amber-400/[0.09] blur-[45px]" />
+              <div className="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-amber-400/[0.07] blur-[35px]" />
 
               <div className="relative">
 
                 <div className="flex items-start justify-between">
 
-                  <div className="flex items-center justify-center w-12 h-12 rounded-[17px] bg-gradient-to-br from-amber-300 via-orange-500 to-amber-700 shadow-[0_10px_30px_rgba(245,158,11,0.25)]">
-
-                    <Dices className="w-6 h-6 text-slate-950" />
-
+                  <div className="flex h-10 w-10 items-center justify-center rounded-[13px] bg-gradient-to-br from-amber-300 via-orange-500 to-amber-700 shadow-[0_8px_22px_rgba(245,158,11,0.2)]">
+                    <Dices className="h-5 w-5 text-slate-950" />
                   </div>
 
-                  <span className="rounded-full border border-amber-400/[0.12] bg-amber-400/[0.06] px-2 py-1 text-[8px] font-bold uppercase tracking-wider text-amber-300">
+                  <span className="rounded-full border border-amber-400/[0.1] bg-amber-400/[0.05] px-1.5 py-0.5 text-[6px] font-bold uppercase tracking-wider text-amber-300">
                     Premium
                   </span>
 
                 </div>
 
-                <div className="mt-7">
+                <div className="mt-5">
 
-                  <h3 className="text-[16px] font-bold text-white tracking-tight">
+                  <h3 className="text-[13px] font-bold text-white">
                     One Figure
                   </h3>
 
-                  <p className="mt-1 text-[11px] leading-relaxed text-white/40">
-                    Premium single figure tool
+                  <p className="mt-1 text-[9px] text-white/35">
+                    Single figure tool
                   </p>
 
                 </div>
 
-                <div className="mt-3 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.15em] text-amber-300/75">
+                <div className="mt-2.5 flex items-center gap-1 text-[7px] font-bold uppercase tracking-[0.12em] text-amber-300/70">
                   Open Tool
-                  <ArrowRight className="w-3 h-3" />
+                  <ArrowRight className="h-2.5 w-2.5" />
                 </div>
 
               </div>
@@ -438,129 +539,77 @@ export default function Home() {
             </button>
 
 
-            {/* =====================================================
-                LOTTERY FAX
-            ====================================================== */}
+            {/* Lottery Fax */}
 
             <button
               type="button"
               onClick={openLotteryFax}
-              className="group relative overflow-hidden text-left rounded-[24px] border border-pink-400/[0.13] bg-gradient-to-br from-pink-500/[0.07] via-white/[0.025] to-transparent p-4 min-h-[160px] transition-all duration-300 active:scale-[0.98]"
+              className="group relative min-h-[137px] overflow-hidden rounded-[20px] border border-pink-400/[0.11] bg-gradient-to-br from-pink-500/[0.06] via-white/[0.02] to-transparent p-3 text-left transition active:scale-[0.98]"
             >
 
-              <div className="relative">
+              <div className="flex h-10 w-10 items-center justify-center rounded-[13px] bg-gradient-to-br from-pink-500 to-rose-600 shadow-[0_8px_22px_rgba(236,72,153,0.17)]">
+                <FileText className="h-5 w-5 text-white" />
+              </div>
 
-                <div className="flex items-center justify-center w-12 h-12 rounded-[17px] bg-gradient-to-br from-pink-500 to-rose-600 shadow-[0_10px_30px_rgba(236,72,153,0.2)]">
+              <div className="mt-5">
 
-                  <FileText className="w-6 h-6 text-white" />
+                <h3 className="text-[13px] font-bold text-white">
+                  Lottery Fax
+                </h3>
 
-                </div>
+                <p className="mt-1 text-[9px] text-white/35">
+                  Official results archive
+                </p>
 
-                <div className="mt-7">
+              </div>
 
-                  <h3 className="text-[16px] font-bold text-white tracking-tight">
-                    Lottery Fax
-                  </h3>
-
-                  <p className="mt-1 text-[11px] leading-relaxed text-white/40">
-                    Official results archive
-                  </p>
-
-                </div>
-
-                <div className="mt-3 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.15em] text-pink-300/70">
-                  View Archive
-                  <ArrowRight className="w-3 h-3" />
-                </div>
-
+              <div className="mt-2.5 flex items-center gap-1 text-[7px] font-bold uppercase tracking-[0.12em] text-pink-300/65">
+                View Archive
+                <ArrowRight className="h-2.5 w-2.5" />
               </div>
 
             </button>
 
 
-            {/* =====================================================
-                YOUTUBE
-            ====================================================== */}
+            {/* YouTube */}
 
             <button
               type="button"
               onClick={openYouTube}
-              className="group relative overflow-hidden text-left rounded-[24px] border border-red-400/[0.13] bg-gradient-to-br from-red-500/[0.08] via-white/[0.025] to-transparent p-4 min-h-[160px] transition-all duration-300 active:scale-[0.98]"
+              className="group relative min-h-[137px] overflow-hidden rounded-[20px] border border-red-400/[0.11] bg-gradient-to-br from-red-500/[0.06] via-white/[0.02] to-transparent p-3 text-left transition active:scale-[0.98]"
             >
 
-              <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-red-500/[0.08] blur-[45px]" />
+              <div className="absolute -right-10 -top-10 h-24 w-24 rounded-full bg-red-500/[0.06] blur-[35px]" />
 
               <div className="relative">
 
                 <div className="flex items-start justify-between">
 
-                  <div className="flex items-center justify-center w-12 h-12 rounded-[17px] bg-gradient-to-br from-red-500 to-red-700 shadow-[0_10px_30px_rgba(239,68,68,0.22)]">
-
-                    <Youtube className="w-6 h-6 text-white" />
-
+                  <div className="flex h-10 w-10 items-center justify-center rounded-[13px] bg-gradient-to-br from-red-500 to-red-700 shadow-[0_8px_22px_rgba(239,68,68,0.17)]">
+                    <Youtube className="h-5 w-5 text-white" />
                   </div>
 
-                  <span className="text-[8px] font-bold uppercase tracking-wider text-red-300/70">
-                    Channel
+                  <span className="text-[6px] font-bold uppercase tracking-wider text-red-300/60">
+                    Official
                   </span>
 
                 </div>
 
-                <div className="mt-7">
+                <div className="mt-5">
 
-                  <h3 className="text-[16px] font-bold text-white tracking-tight">
-                    YouTube Channel
+                  <h3 className="text-[13px] font-bold text-white">
+                    YouTube
                   </h3>
 
-                  <p className="mt-1 text-[11px] leading-relaxed text-white/40">
-                    Dear Lottery official channel
+                  <p className="mt-1 text-[9px] text-white/35">
+                    Dear Lottery channel
                   </p>
 
                 </div>
 
-                <div className="mt-3 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.15em] text-red-300/75">
+                <div className="mt-2.5 flex items-center gap-1 text-[7px] font-bold uppercase tracking-[0.12em] text-red-300/65">
                   Watch Channel
-                  <ArrowRight className="w-3 h-3" />
-                </div>
-
-              </div>
-
-            </button>
-
-
-            {/* =====================================================
-                SETTINGS
-            ====================================================== */}
-
-            <button
-              type="button"
-              onClick={handleSettingsOpen}
-              className="group relative overflow-hidden text-left rounded-[24px] border border-white/[0.09] bg-gradient-to-br from-white/[0.055] via-white/[0.02] to-transparent p-4 min-h-[160px] transition-all duration-300 active:scale-[0.98]"
-            >
-
-              <div className="relative">
-
-                <div className="flex items-center justify-center w-12 h-12 rounded-[17px] bg-gradient-to-br from-slate-500 to-slate-700 shadow-[0_10px_30px_rgba(100,116,139,0.16)]">
-
-                  <Settings className="w-6 h-6 text-white" />
-
-                </div>
-
-                <div className="mt-7">
-
-                  <h3 className="text-[16px] font-bold text-white tracking-tight">
-                    Settings
-                  </h3>
-
-                  <p className="mt-1 text-[11px] leading-relaxed text-white/40">
-                    App preferences
-                  </p>
-
-                </div>
-
-                <div className="mt-3 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.15em] text-white/40">
-                  Configure
-                  <ArrowRight className="w-3 h-3" />
+                  <ArrowRight className="h-2.5 w-2.5" />
                 </div>
 
               </div>
@@ -572,122 +621,99 @@ export default function Home() {
         </section>
 
 
-        {/* =========================================================
+        {/* =====================================================
             REFUND GUARANTEE
-        ========================================================== */}
+        ====================================================== */}
 
-        <section className="mb-5">
+        <section className="mb-3.5">
 
-          <div className="relative overflow-hidden rounded-[25px] border border-emerald-400/[0.11] bg-gradient-to-r from-emerald-400/[0.045] via-white/[0.025] to-transparent p-4">
+          <div className="relative overflow-hidden rounded-[20px] border border-emerald-400/[0.09] bg-emerald-400/[0.025] p-3.5">
 
-            <div className="absolute -right-10 -top-10 w-32 h-32 rounded-full bg-emerald-400/[0.05] blur-[45px]" />
+            <div className="flex items-center gap-2.5">
 
-            <div className="relative flex items-center gap-3">
-
-              <div className="flex items-center justify-center w-12 h-12 rounded-[17px] bg-emerald-400/[0.07] border border-emerald-400/[0.09]">
-
-                <ShieldCheck className="w-6 h-6 text-emerald-400" />
-
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-400/[0.06]">
+                <ShieldCheck className="h-4.5 w-4.5 text-emerald-400" />
               </div>
 
-              <div className="flex-1">
-
-                <h3 className="text-[14px] font-bold text-white">
+              <div className="min-w-0">
+                <h3 className="text-[11px] font-bold text-white">
                   100% Refund Guarantee
                 </h3>
 
-                <p className="mt-1 text-[10px] text-white/40">
+                <p className="mt-0.5 text-[8px] text-white/35">
                   Predictions miss, payment refunded.
                 </p>
-
               </div>
-
-              <ArrowRight className="w-4 h-4 text-white/20" />
 
             </div>
 
           </div>
-
-        </section>
-
-
-        <section className="text-center pb-2">
-
-          <p className="text-[9px] uppercase tracking-[0.2em] text-white/20">
-            Premium Experience
-          </p>
 
         </section>
 
       </main>
 
 
-      {/* =========================================================
+      {/* =====================================================
           BOTTOM NAVIGATION
-      ========================================================== */}
+      ====================================================== */}
 
       <nav className="fixed bottom-0 left-0 right-0 z-50">
 
-        <div className="max-w-md mx-auto px-3 pb-3">
+        <div className="mx-auto max-w-md px-3 pb-2">
 
-          <div className="flex items-center justify-around rounded-[28px] border border-white/[0.08] bg-[#0b101c]/95 backdrop-blur-2xl px-3 py-2 shadow-[0_-15px_50px_rgba(0,0,0,0.35)]">
+          <div className="flex items-center justify-around rounded-[22px] border border-white/[0.07] bg-[#0b101a]/96 px-2 py-1.5 backdrop-blur-2xl shadow-[0_-12px_40px_rgba(0,0,0,0.35)]">
 
-            {/* HOME */}
+            {/* Home */}
 
             <button
               type="button"
-              className="flex flex-col items-center justify-center min-w-[72px] py-1.5"
+              className="flex min-w-[65px] flex-col items-center justify-center py-1"
             >
 
-              <div className="flex items-center justify-center w-11 h-11 rounded-[17px] bg-gradient-to-br from-amber-300 via-amber-500 to-orange-600 text-slate-950 shadow-[0_8px_25px_rgba(245,158,11,0.22)]">
-
-                <HomeIcon className="w-5 h-5" />
-
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-amber-300 to-orange-600 shadow-[0_6px_18px_rgba(245,158,11,0.18)]">
+                <HomeIcon className="h-4 w-4 text-slate-950" />
               </div>
 
-              <span className="mt-1 text-[9px] font-black uppercase tracking-wider text-amber-400">
+              <span className="mt-0.5 text-[7px] font-black uppercase tracking-wider text-amber-400">
                 Home
               </span>
 
             </button>
 
 
-            {/* SUPPORT */}
+            {/* Support */}
 
             <button
               type="button"
               onClick={openSupport}
-              className="flex flex-col items-center justify-center min-w-[72px] py-1.5"
+              className="flex min-w-[65px] flex-col items-center justify-center py-1"
             >
 
-              <div className="flex items-center justify-center w-11 h-11 rounded-[17px] bg-gradient-to-br from-cyan-400 to-blue-600 text-white shadow-[0_8px_25px_rgba(14,165,233,0.18)]">
-
-                <Send className="w-5 h-5" />
-
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-sky-400 via-blue-500 to-indigo-600 shadow-[0_6px_18px_rgba(59,130,246,0.18)]">
+                <Send className="h-4 w-4 text-white" />
               </div>
 
-              <span className="mt-1 text-[9px] font-black uppercase tracking-wider text-blue-400">
+              <span className="mt-0.5 text-[7px] font-black uppercase tracking-wider text-blue-300/75">
                 Support
               </span>
 
             </button>
 
 
-            {/* SETTINGS */}
+            {/* Settings */}
 
             <button
               type="button"
               onClick={handleSettingsOpen}
-              className="flex flex-col items-center justify-center min-w-[72px] py-1.5"
+              className="flex min-w-[65px] flex-col items-center justify-center py-1"
             >
 
-              <div className="flex items-center justify-center w-11 h-11 rounded-[17px] bg-gradient-to-br from-slate-500 to-slate-700 text-white shadow-[0_8px_25px_rgba(100,116,139,0.15)]">
-
-                <Settings className="w-5 h-5" />
-
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br from-slate-500 to-slate-700 shadow-[0_6px_18px_rgba(100,116,139,0.12)]">
+                <Settings className="h-4 w-4 text-white" />
               </div>
 
-              <span className="mt-1 text-[9px] font-black uppercase tracking-wider text-white/45">
+              <span className="mt-0.5 text-[7px] font-black uppercase tracking-wider text-white/40">
                 Settings
               </span>
 
@@ -700,40 +726,37 @@ export default function Home() {
       </nav>
 
 
-      {/* =========================================================
+      {/* =====================================================
           ONE FIGURE MODAL
-      ========================================================== */}
+      ====================================================== */}
 
       {showOneFigure && (
+        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/75 p-2.5 backdrop-blur-md sm:items-center">
 
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-md p-3">
+          <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-[26px] border border-white/[0.08] bg-[#0b101b] shadow-[0_30px_100px_rgba(0,0,0,0.65)]">
 
-          <div className="relative w-full max-w-md overflow-hidden rounded-[30px] border border-white/[0.09] bg-[#0b101b] shadow-[0_30px_100px_rgba(0,0,0,0.6)]">
+            <div className="absolute -right-20 -top-20 h-48 w-48 rounded-full bg-amber-400/[0.07] blur-[65px]" />
 
-            <div className="absolute -top-20 -right-20 h-56 w-56 rounded-full bg-amber-400/[0.08] blur-[70px]" />
+            <div className="relative p-4">
 
-            <div className="relative p-5">
+              {/* Modal header */}
 
-              <div className="flex items-center justify-between mb-6">
+              <div className="mb-4 flex items-center justify-between">
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5">
 
-                  <div className="flex h-12 w-12 items-center justify-center rounded-[17px] bg-gradient-to-br from-amber-300 via-orange-500 to-amber-700 shadow-[0_10px_30px_rgba(245,158,11,0.25)]">
-
-                    <Dices className="h-6 w-6 text-slate-950" />
-
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-300 via-orange-500 to-amber-700 shadow-[0_8px_24px_rgba(245,158,11,0.2)]">
+                    <Dices className="h-5 w-5 text-slate-950" />
                   </div>
 
                   <div>
-
-                    <p className="text-[9px] uppercase tracking-[0.2em] text-amber-400/60 font-bold">
+                    <p className="text-[7px] font-bold uppercase tracking-[0.2em] text-amber-400/60">
                       Premium Tool
                     </p>
 
-                    <h2 className="text-xl font-bold text-white">
+                    <h2 className="text-[17px] font-bold text-white">
                       One Figure
                     </h2>
-
                   </div>
 
                 </div>
@@ -741,155 +764,270 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setShowOneFigure(false)}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.05] border border-white/[0.06]"
+                  className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.04]"
                 >
-                  <X className="h-4 w-4 text-white/60" />
+                  <X className="h-3.5 w-3.5 text-white/60" />
                 </button>
 
               </div>
 
 
-              {/* Dice display */}
+              {/* Coin requirement */}
 
-              <div className="flex flex-col items-center justify-center rounded-[25px] border border-amber-400/[0.10] bg-gradient-to-br from-amber-400/[0.07] via-white/[0.025] to-transparent p-7 mb-4">
+              <div className="mb-3 flex items-center justify-between rounded-xl border border-amber-400/[0.08] bg-amber-400/[0.035] px-3 py-2.5">
 
-                <div className="flex h-24 w-24 items-center justify-center rounded-[26px] bg-gradient-to-br from-white via-amber-200 to-orange-500 shadow-[0_20px_50px_rgba(245,158,11,0.22)] rotate-[-3deg]">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-3.5 w-3.5 text-amber-400" />
 
-                  <Dices className="h-12 w-12 text-slate-900" />
+                  <span className="text-[9px] font-semibold text-white/50">
+                    Cost per quantity
+                  </span>
+                </div>
+
+                <span className="text-[11px] font-black text-amber-300">
+                  {COINS_PER_QUANTITY} Coins
+                </span>
+
+              </div>
+
+
+              {/* Digit selection */}
+
+              <div className="mb-3 rounded-[20px] border border-white/[0.06] bg-white/[0.018] p-3">
+
+                <div className="mb-2.5 flex items-center justify-between">
+
+                  <div>
+                    <p className="text-[8px] font-bold uppercase tracking-[0.16em] text-white/30">
+                      Select Figures
+                    </p>
+
+                    <p className="mt-0.5 text-[9px] text-white/25">
+                      Choose one or multiple digits
+                    </p>
+                  </div>
+
+                  <span className="rounded-full bg-white/[0.04] px-2 py-1 text-[7px] font-bold text-white/35">
+                    0 — 9
+                  </span>
 
                 </div>
 
-                <p className="mt-5 text-[10px] uppercase tracking-[0.22em] font-bold text-white/35">
-                  Single Figure Analysis
-                </p>
 
-                <p className="mt-1 text-center text-xs text-white/45">
-                  Select a tool below to continue
-                </p>
+                <div className="grid grid-cols-5 gap-2">
+
+                  {Array.from({ length: 10 }, (_, digit) => {
+                    const quantity = quantities[digit] || 0;
+                    const selected = quantity > 0;
+
+                    return (
+                      <div
+                        key={digit}
+                        className={`rounded-xl border p-2 transition-all ${
+                          selected
+                            ? "border-amber-400/[0.25] bg-amber-400/[0.06]"
+                            : "border-white/[0.05] bg-white/[0.025]"
+                        }`}
+                      >
+
+                        <button
+                          type="button"
+                          onClick={() => addQuantity(digit)}
+                          className={`mx-auto flex h-9 w-9 items-center justify-center rounded-xl text-sm font-black transition active:scale-90 ${
+                            selected
+                              ? "bg-gradient-to-br from-amber-300 to-orange-600 text-slate-950"
+                              : "bg-white/[0.055] text-white/80"
+                          }`}
+                        >
+                          {digit}
+                        </button>
+
+                        <div className="mt-1.5 flex items-center justify-between gap-1">
+
+                          <button
+                            type="button"
+                            onClick={() => removeQuantity(digit)}
+                            disabled={!selected}
+                            className="flex h-5 w-5 items-center justify-center rounded-md bg-white/[0.05] disabled:opacity-20"
+                          >
+                            <Minus className="h-2.5 w-2.5 text-white/60" />
+                          </button>
+
+                          <span className="min-w-[12px] text-center text-[9px] font-bold text-white/70">
+                            {quantity}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() => addQuantity(digit)}
+                            className="flex h-5 w-5 items-center justify-center rounded-md bg-white/[0.05]"
+                          >
+                            <Plus className="h-2.5 w-2.5 text-amber-400" />
+                          </button>
+
+                        </div>
+
+                      </div>
+                    );
+                  })}
+
+                </div>
+
+              </div>
+
+
+              {/* Selected summary */}
+
+              <div className="mb-3 rounded-[20px] border border-white/[0.06] bg-white/[0.018] p-3">
+
+                <div className="mb-2 flex items-center justify-between">
+
+                  <span className="text-[8px] font-bold uppercase tracking-[0.16em] text-white/30">
+                    Selection Summary
+                  </span>
+
+                  <span className="text-[8px] font-bold text-white/35">
+                    {selectedDigits.length} Figures
+                  </span>
+
+                </div>
+
+                {selectedDigits.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+
+                    {selectedDigits.map((digit) => (
+                      <div
+                        key={digit}
+                        className="flex items-center gap-1 rounded-lg border border-amber-400/[0.12] bg-amber-400/[0.045] px-2 py-1"
+                      >
+                        <span className="text-[9px] font-black text-amber-300">
+                          {digit}
+                        </span>
+
+                        <span className="text-[7px] text-white/35">
+                          × {quantities[digit]}
+                        </span>
+                      </div>
+                    ))}
+
+                  </div>
+                ) : (
+                  <p className="py-2 text-center text-[9px] text-white/20">
+                    No figure selected
+                  </p>
+                )}
 
               </div>
 
 
-              {/* One Figure options */}
+              {/* Total */}
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="mb-3 rounded-[20px] border border-white/[0.07] bg-gradient-to-r from-white/[0.04] to-transparent p-3">
 
-                <button
-                  type="button"
-                  className="rounded-[20px] border border-white/[0.07] bg-white/[0.035] p-4 text-left transition-all active:scale-[0.97]"
-                >
+                <div className="flex items-center justify-between">
 
-                  <Search className="h-5 w-5 text-amber-400 mb-3" />
+                  <div>
+                    <p className="text-[7px] font-bold uppercase tracking-[0.16em] text-white/25">
+                      Total Quantity
+                    </p>
 
-                  <h3 className="text-sm font-bold text-white">
-                    Figure Search
-                  </h3>
+                    <p className="mt-0.5 text-xl font-black text-white">
+                      {totalQuantity}
+                    </p>
+                  </div>
 
-                  <p className="mt-1 text-[9px] text-white/35">
-                    Search your figure
-                  </p>
+                  <div className="text-right">
 
-                </button>
+                    <p className="text-[7px] font-bold uppercase tracking-[0.16em] text-white/25">
+                      Total Coins
+                    </p>
 
+                    <p className="mt-0.5 text-xl font-black text-amber-300">
+                      {totalCoins}
+                    </p>
 
-                <button
-                  type="button"
-                  className="rounded-[20px] border border-white/[0.07] bg-white/[0.035] p-4 text-left transition-all active:scale-[0.97]"
-                >
+                  </div>
 
-                  <TrendingUp className="h-5 w-5 text-cyan-400 mb-3" />
+                </div>
 
-                  <h3 className="text-sm font-bold text-white">
-                    Analysis
-                  </h3>
+                <div className="mt-2 flex items-center justify-between border-t border-white/[0.05] pt-2">
 
-                  <p className="mt-1 text-[9px] text-white/35">
-                    View figure analysis
-                  </p>
+                  <span className="text-[8px] text-white/30">
+                    Available balance
+                  </span>
 
-                </button>
+                  <span
+                    className={`text-[9px] font-bold ${
+                      remainingCoins >= 0
+                        ? "text-emerald-400"
+                        : "text-red-400"
+                    }`}
+                  >
+                    {balance} Coins
+                  </span>
 
-
-                <button
-                  type="button"
-                  className="rounded-[20px] border border-white/[0.07] bg-white/[0.035] p-4 text-left transition-all active:scale-[0.97]"
-                >
-
-                  <Sparkles className="h-5 w-5 text-violet-400 mb-3" />
-
-                  <h3 className="text-sm font-bold text-white">
-                    Smart Pick
-                  </h3>
-
-                  <p className="mt-1 text-[9px] text-white/35">
-                    Premium selection
-                  </p>
-
-                </button>
-
-
-                <button
-                  type="button"
-                  className="rounded-[20px] border border-white/[0.07] bg-white/[0.035] p-4 text-left transition-all active:scale-[0.97]"
-                >
-
-                  <CheckCircle className="h-5 w-5 text-emerald-400 mb-3" />
-
-                  <h3 className="text-sm font-bold text-white">
-                    Result
-                  </h3>
-
-                  <p className="mt-1 text-[9px] text-white/35">
-                    View final result
-                  </p>
-
-                </button>
+                </div>
 
               </div>
+
+
+              {/* Continue */}
+
+              <button
+                type="button"
+                onClick={continueToTelegram}
+                disabled={
+                  totalQuantity === 0 || totalCoins > balance
+                }
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-300 via-amber-400 to-orange-500 py-3 text-[10px] font-black uppercase tracking-[0.15em] text-slate-950 shadow-[0_8px_25px_rgba(245,158,11,0.16)] transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-30"
+              >
+                Continue
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+
+              {totalQuantity > 0 && totalCoins > balance && (
+                <p className="mt-2 text-center text-[8px] font-semibold text-red-400/80">
+                  Not enough demo coins. Add balance to continue.
+                </p>
+              )}
 
             </div>
 
           </div>
 
         </div>
-
       )}
 
 
-      {/* =========================================================
+      {/* =====================================================
           BALANCE MODAL
-      ========================================================== */}
+      ====================================================== */}
 
       {showBalance && (
+        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/75 p-2.5 backdrop-blur-md sm:items-center">
 
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-md p-3">
+          <div className="relative w-full max-w-md overflow-hidden rounded-[26px] border border-white/[0.08] bg-[#0b101b] shadow-[0_30px_100px_rgba(0,0,0,0.65)]">
 
-          <div className="relative w-full max-w-md overflow-hidden rounded-[30px] border border-white/[0.09] bg-[#0b101b] shadow-[0_30px_100px_rgba(0,0,0,0.6)]">
+            <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-amber-400/[0.06] blur-[55px]" />
 
-            <div className="absolute -top-20 -right-20 h-56 w-56 rounded-full bg-amber-400/[0.08] blur-[70px]" />
+            <div className="relative p-4">
 
-            <div className="relative p-5">
+              <div className="mb-4 flex items-center justify-between">
 
-              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2.5">
 
-                <div className="flex items-center gap-3">
-
-                  <div className="flex h-12 w-12 items-center justify-center rounded-[17px] bg-gradient-to-br from-amber-300 to-orange-600">
-
-                    <Wallet className="h-6 w-6 text-slate-950" />
-
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-300 to-orange-600">
+                    <Wallet className="h-5 w-5 text-slate-950" />
                   </div>
 
                   <div>
-
-                    <p className="text-[9px] uppercase tracking-[0.2em] text-white/35 font-bold">
+                    <p className="text-[7px] font-bold uppercase tracking-[0.18em] text-white/30">
                       Account Wallet
                     </p>
 
-                    <h2 className="text-xl font-bold text-white">
+                    <h2 className="text-[17px] font-bold text-white">
                       Add Balance
                     </h2>
-
                   </div>
 
                 </div>
@@ -897,9 +1035,9 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setShowBalance(false)}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/[0.05] border border-white/[0.06]"
+                  className="flex h-8 w-8 items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.04]"
                 >
-                  <X className="h-4 w-4 text-white/60" />
+                  <X className="h-3.5 w-3.5 text-white/60" />
                 </button>
 
               </div>
@@ -907,80 +1045,236 @@ export default function Home() {
 
               {/* Current balance */}
 
-              <div className="rounded-[24px] border border-amber-400/[0.10] bg-amber-400/[0.045] p-5 mb-4">
+              <div className="mb-3 rounded-[20px] border border-amber-400/[0.09] bg-amber-400/[0.035] p-3.5">
 
-                <p className="text-[9px] uppercase tracking-[0.2em] text-white/35 font-bold">
+                <p className="text-[7px] font-bold uppercase tracking-[0.18em] text-white/25">
                   Current Balance
                 </p>
 
-                <p className="mt-2 text-3xl font-black text-white">
-                  ₹{balance.toFixed(2)}
+                <p className="mt-1 text-2xl font-black text-white">
+                  {balance.toLocaleString()} Coins
                 </p>
 
               </div>
 
 
-              <div className="flex items-center gap-2 mb-3">
+              {/* Redeem code */}
 
-                <CreditCard className="h-4 w-4 text-amber-400" />
+              <div className="mb-3 rounded-[20px] border border-white/[0.06] bg-white/[0.018] p-3">
 
-                <p className="text-xs font-bold text-white/70">
-                  Select Amount
-                </p>
+                <div className="mb-2 flex items-center gap-2">
+                  <CreditCard className="h-3.5 w-3.5 text-amber-400" />
 
-              </div>
+                  <span className="text-[9px] font-bold text-white/55">
+                    Redeem Demo Code
+                  </span>
+                </div>
 
+                <div className="flex gap-2">
 
-              {/* Amount options */}
-
-              <div className="grid grid-cols-3 gap-3">
-
-                {[99, 199, 299, 499, 999, 1999].map((amount) => (
+                  <input
+                    value={redeemCode}
+                    onChange={(event) => {
+                      setRedeemCode(event.target.value);
+                      setRedeemMessage("");
+                    }}
+                    placeholder="OneFigure1"
+                    className="min-w-0 flex-1 rounded-xl border border-white/[0.07] bg-black/20 px-3 py-2.5 text-[10px] font-semibold text-white outline-none placeholder:text-white/20 focus:border-amber-400/25"
+                  />
 
                   <button
-                    key={amount}
                     type="button"
-                    onClick={() => addBalance(amount)}
-                    className="rounded-[18px] border border-white/[0.07] bg-white/[0.035] py-4 text-center transition-all active:scale-[0.96] hover:border-amber-400/[0.2]"
+                    onClick={redeemDemoCode}
+                    className="rounded-xl bg-gradient-to-r from-amber-300 to-orange-500 px-3 text-[8px] font-black uppercase tracking-wider text-slate-950"
                   >
-
-                    <span className="text-sm font-black text-white">
-                      ₹{amount}
-                    </span>
-
-                    <span className="block mt-1 text-[8px] uppercase tracking-wider text-white/30">
-                      Add
-                    </span>
-
+                    Add
                   </button>
 
-                ))}
+                </div>
+
+                <p className="mt-2 text-[7px] text-white/20">
+                  Demo codes: OneFigure1 — OneFigure100
+                </p>
+
+                {redeemMessage && (
+                  <p className="mt-2 text-[8px] font-semibold text-emerald-400">
+                    {redeemMessage}
+                  </p>
+                )}
 
               </div>
 
 
-              <p className="mt-4 text-center text-[9px] leading-relaxed text-white/25">
-                Payment integration can be connected to these options later.
-              </p>
+              {/* Quick demo amounts */}
+
+              <div>
+
+                <p className="mb-2 text-[8px] font-bold uppercase tracking-[0.16em] text-white/25">
+                  Quick Demo Credits
+                </p>
+
+                <div className="grid grid-cols-3 gap-2">
+
+                  {[100, 500, 1000].map((amount) => (
+                    <button
+                      key={amount}
+                      type="button"
+                      onClick={() => setBalance((current) => current + amount)}
+                      className="rounded-xl border border-white/[0.06] bg-white/[0.025] py-2.5 transition active:scale-95"
+                    >
+                      <span className="text-[10px] font-black text-white">
+                        +{amount}
+                      </span>
+
+                      <span className="mt-0.5 block text-[6px] uppercase tracking-wider text-white/25">
+                        Demo Coins
+                      </span>
+                    </button>
+                  ))}
+
+                </div>
+
+              </div>
 
             </div>
 
           </div>
 
         </div>
-
       )}
 
 
-      {/* =========================================================
-          EXISTING MODALS
-      ========================================================== */}
+      {/* =====================================================
+          FINAL SUMMARY
+      ====================================================== */}
+
+      {showSummary && (
+        <div className="fixed inset-0 z-[110] flex items-end justify-center bg-black/80 p-2.5 backdrop-blur-md sm:items-center">
+
+          <div className="w-full max-w-md rounded-[26px] border border-white/[0.08] bg-[#0b101b] p-4 shadow-[0_30px_100px_rgba(0,0,0,0.65)]">
+
+            <div className="mb-4 flex items-center justify-between">
+
+              <div>
+                <p className="text-[7px] font-bold uppercase tracking-[0.18em] text-amber-400/60">
+                  Selection Ready
+                </p>
+
+                <h2 className="mt-0.5 text-[17px] font-bold text-white">
+                  Review Selection
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowSummary(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/[0.04]"
+              >
+                <X className="h-3.5 w-3.5 text-white/60" />
+              </button>
+
+            </div>
+
+
+            <div className="mb-3 rounded-[20px] border border-white/[0.06] bg-black/20 p-3">
+
+              <div className="mb-2 flex items-center justify-between">
+
+                <span className="text-[8px] font-bold uppercase tracking-wider text-white/25">
+                  Selected Figures
+                </span>
+
+                <span className="text-[9px] font-bold text-amber-300">
+                  {totalQuantity} Total
+                </span>
+
+              </div>
+
+              <div className="flex flex-wrap gap-1.5">
+
+                {selectedDigits.map((digit) => (
+                  <div
+                    key={digit}
+                    className="rounded-lg bg-amber-400/[0.06] px-2 py-1"
+                  >
+                    <span className="text-[9px] font-black text-amber-300">
+                      {digit}
+                    </span>
+
+                    <span className="ml-1 text-[7px] text-white/35">
+                      ×{quantities[digit]}
+                    </span>
+                  </div>
+                ))}
+
+              </div>
+
+            </div>
+
+
+            <div className="mb-3 flex items-center justify-between rounded-xl border border-white/[0.06] bg-white/[0.025] px-3 py-2.5">
+
+              <span className="text-[9px] text-white/35">
+                Total Coins
+              </span>
+
+              <span className="text-sm font-black text-amber-300">
+                {totalCoins}
+              </span>
+
+            </div>
+
+
+            <div className="mb-3 flex gap-2">
+
+              <button
+                type="button"
+                onClick={copySummary}
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-white/[0.07] bg-white/[0.035] py-3 text-[8px] font-bold uppercase tracking-wider text-white/55"
+              >
+                {copied ? (
+                  <>
+                    <Check className="h-3.5 w-3.5 text-emerald-400" />
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-3.5 w-3.5" />
+                    Copy
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={sendToTelegram}
+                className="flex flex-[1.5] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-600 py-3 text-[8px] font-black uppercase tracking-wider text-white shadow-[0_8px_22px_rgba(59,130,246,0.18)]"
+              >
+                <Send className="h-3.5 w-3.5" />
+                Open Telegram
+              </button>
+
+            </div>
+
+            <p className="text-center text-[7px] leading-relaxed text-white/20">
+              Telegram will open with the selection summary prepared for review.
+            </p>
+
+          </div>
+
+        </div>
+      )}
+
+
+      {/* Existing settings */}
 
       <SettingsModal
         isOpen={showSettings}
         onClose={handleSettingsClose}
         onOpenPrivacy={handlePrivacyOpen}
       />
+
+      {/* Existing privacy */}
 
       <PrivacyPolicyModal
         isOpen={showPrivacy}

@@ -1,1116 +1,418 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>LAST DIGIT PRO · Premium</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet" />
-    <style>
-        /* ============================================
-                   RESET & BASE
-                   ============================================ */
-        *,
-        *::before,
-        *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+import { useEffect, useState } from "react";
+import {
+  ShieldCheck,
+  Clock,
+  Search,
+  TrendingUp,
+  FileText,
+  Settings,
+  Lock,
+  Users,
+  Home as HomeIcon,
+  Send,
+  ArrowRight,
+  CheckCircle,
+} from "lucide-react";
+import { useLocation } from "wouter";
 
-        body {
-            background: #0b0a0f;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            padding: 20px;
-            margin: 0;
-        }
+import { PrivacyPolicyModal } from "@/components/modals/privacy-policy-modal";
+import { SettingsModal } from "@/components/modals/settings-modal";
 
-        /* ============================================
-                   PHONE FRAME
-                   ============================================ */
-        .phone-frame {
-            width: 390px;
-            max-width: 100%;
-            background: #121016;
-            border-radius: 48px;
-            padding: 18px 16px 8px;
-            position: relative;
-            box-shadow:
-                0 40px 90px rgba(0, 0, 0, 0.85),
-                0 0 0 1px rgba(255, 255, 255, 0.04) inset,
-                0 0 0 1px rgba(255, 255, 255, 0.02);
-            transition: all 0.2s ease;
-            overflow: hidden;
-        }
+export default function Home() {
+  const [, setLocation] = useLocation();
 
-        /* subtle edge glow */
-        .phone-frame::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 48px;
-            padding: 1px;
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, transparent 50%, rgba(255, 255, 255, 0.02) 100%);
-            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-            -webkit-mask-composite: xor;
-            mask-composite: exclude;
-            pointer-events: none;
-        }
+  const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [activeUsers, setActiveUsers] = useState(29);
 
-        /* ============================================
-                   STATUS BAR (simulated)
-                   ============================================ */
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 2px 2px 14px 2px;
-            color: rgba(255, 255, 255, 0.35);
-            font-size: 12px;
-            font-weight: 500;
-            letter-spacing: 0.2px;
-        }
-        .status-bar .time {
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.7);
-        }
-        .status-icons {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-        }
-        .status-icons svg {
-            opacity: 0.5;
-        }
+  useEffect(() => {
+    const updateActiveUsers = () => {
+      const min = 20;
+      const max = 45;
+      const users =
+        Math.floor(Math.random() * (max - min + 1)) + min;
 
-        /* ============================================
-                   HEADER — LAST DIGIT PRO
-                   ============================================ */
-        .app-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 0 16px 0;
-        }
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .brand-icon {
-            width: 38px;
-            height: 38px;
-            background: linear-gradient(145deg, #f5b042, #d97d2a);
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 17px;
-            color: #121016;
-            box-shadow: 0 4px 16px rgba(218, 145, 47, 0.25);
-            flex-shrink: 0;
-        }
-        .brand-text {
-            font-weight: 800;
-            font-size: 20px;
-            letter-spacing: -0.4px;
-            color: #ffffff;
-            background: linear-gradient(135deg, #ffffff 55%, rgba(255, 255, 255, 0.6));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-        .brand-text span {
-            font-weight: 300;
-            color: rgba(255, 255, 255, 0.25);
-            -webkit-text-fill-color: rgba(255, 255, 255, 0.25);
-        }
+      setActiveUsers(users);
+    };
 
-        .header-actions {
-            display: flex;
-            gap: 6px;
-            align-items: center;
-        }
-        .header-btn {
-            width: 38px;
-            height: 38px;
-            border-radius: 14px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: rgba(255, 255, 255, 0.4);
-            cursor: default;
-            transition: all 0.2s;
-            backdrop-filter: blur(6px);
-        }
-        .header-btn svg {
-            opacity: 0.7;
-        }
+    updateActiveUsers();
 
-        /* ============================================
-                   LIVE USER INDICATOR
-                   ============================================ */
-        .live-strip {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 18px;
-            padding: 10px 16px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            margin-bottom: 14px;
-            backdrop-filter: blur(4px);
-        }
-        .live-strip-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .live-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #34d399;
-            box-shadow: 0 0 16px rgba(52, 211, 153, 0.3);
-            animation: pulse-dot 2.4s ease-in-out infinite;
-            flex-shrink: 0;
-        }
-        @keyframes pulse-dot {
-            0%,
-            100% {
-                opacity: 1;
-                transform: scale(1);
-            }
-            50% {
-                opacity: 0.4;
-                transform: scale(0.8);
-            }
-        }
-        .live-label {
-            font-size: 13px;
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.75);
-            letter-spacing: 0.1px;
-        }
-        .live-label strong {
-            font-weight: 700;
-            color: #ffffff;
-        }
-        .live-count {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.04);
-            padding: 4px 14px;
-            border-radius: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            letter-spacing: 0.2px;
-        }
-        .live-count .num {
-            color: #ffffff;
-            font-weight: 600;
-        }
+    const interval = setInterval(updateActiveUsers, 5000);
 
-        /* ============================================
-                   SECURE / LIVE UPDATES STRIP
-                   ============================================ */
-        .info-strip {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: rgba(255, 255, 255, 0.015);
-            border-radius: 16px;
-            padding: 9px 16px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .info-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 11px;
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.5);
-            letter-spacing: 0.2px;
-        }
-        .info-badge svg {
-            opacity: 0.5;
-            flex-shrink: 0;
-        }
-        .info-badge .highlight {
-            color: #f5b042;
-            font-weight: 600;
-        }
-        .info-divider {
-            width: 1px;
-            height: 18px;
-            background: rgba(255, 255, 255, 0.06);
-        }
-        .info-update {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.4);
-            font-weight: 500;
-            letter-spacing: 0.1px;
-        }
-        .info-update .live-badge {
-            background: rgba(52, 211, 153, 0.08);
-            color: #34d399;
-            padding: 2px 12px;
-            border-radius: 30px;
-            font-size: 9px;
-            font-weight: 700;
-            letter-spacing: 0.4px;
-            text-transform: uppercase;
-            border: 1px solid rgba(52, 211, 153, 0.08);
-        }
+    return () => clearInterval(interval);
+  }, []);
 
-        /* ============================================
-                   FEATURE GRID — Lucky Search, Dear Digits
-                   ============================================ */
-        .feature-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 14px;
-        }
+  const handleSettingsOpen = () => {
+    setShowSettings(true);
+  };
 
-        .feature-card {
-            background: rgba(255, 255, 255, 0.015);
-            border-radius: 22px;
-            padding: 18px 16px 14px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(4px);
-            transition: all 0.25s ease;
-            position: relative;
-            overflow: hidden;
-            min-height: 108px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            cursor: default;
-        }
-        .feature-card::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 70px;
-            height: 70px;
-            background: radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.015), transparent 70%);
-            pointer-events: none;
-            border-radius: 0 22px 0 70px;
-        }
+  const handleSettingsClose = () => {
+    setShowSettings(false);
+  };
 
-        .feature-card .card-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 10px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-        }
-        .feature-card .card-icon svg {
-            opacity: 0.85;
-        }
-        .feature-card .card-title {
-            font-size: 15px;
-            font-weight: 700;
-            color: #ffffff;
-            letter-spacing: -0.2px;
-            margin-bottom: 2px;
-        }
-        .feature-card .card-desc {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.3);
-            font-weight: 400;
-            line-height: 1.4;
-        }
-        .feature-card .card-tag {
-            font-size: 9px;
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.15);
-            margin-top: 8px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
+  const handlePrivacyOpen = () => {
+    setShowSettings(false);
 
-        /* Lucky Search — warm gold accent */
-        .feature-card.lucky {
-            background: linear-gradient(145deg, rgba(245, 176, 66, 0.06), rgba(245, 176, 66, 0.01));
-            border-color: rgba(245, 176, 66, 0.08);
-        }
-        .feature-card.lucky .card-icon {
-            background: rgba(245, 176, 66, 0.08);
-            border-color: rgba(245, 176, 66, 0.10);
-        }
-        .feature-card.lucky .card-title {
-            color: #f5b042;
-        }
+    setTimeout(() => {
+      setShowPrivacy(true);
+    }, 100);
+  };
 
-        /* Dear Digits — cool violet accent */
-        .feature-card.digits {
-            background: linear-gradient(145deg, rgba(129, 140, 248, 0.05), rgba(129, 140, 248, 0.01));
-            border-color: rgba(129, 140, 248, 0.06);
-        }
-        .feature-card.digits .card-icon {
-            background: rgba(129, 140, 248, 0.07);
-            border-color: rgba(129, 140, 248, 0.08);
-        }
-        .feature-card.digits .card-title {
-            color: #a5b4fc;
-        }
+  const handlePrivacyClose = () => {
+    setShowPrivacy(false);
+  };
 
-        /* ============================================
-                   LOTTERY FAX — full-width
-                   ============================================ */
-        .lottery-fax {
-            background: rgba(255, 255, 255, 0.015);
-            border-radius: 22px;
-            padding: 16px 18px 14px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            margin-bottom: 14px;
-            backdrop-filter: blur(4px);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: relative;
-            overflow: hidden;
-            cursor: default;
-        }
-        .lottery-fax::after {
-            content: '';
-            position: absolute;
-            top: -30px;
-            right: -30px;
-            width: 140px;
-            height: 140px;
-            background: radial-gradient(circle, rgba(245, 176, 66, 0.03), transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-        }
-        .lottery-fax-left {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            z-index: 1;
-        }
-        .lottery-fax-left .fax-icon {
-            width: 46px;
-            height: 46px;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .lottery-fax-left .fax-text .fax-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: #ffffff;
-            letter-spacing: -0.2px;
-        }
-        .lottery-fax-left .fax-text .fax-desc {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.3);
-            margin-top: 1px;
-        }
-        .lottery-fax .fax-badge {
-            background: rgba(245, 176, 66, 0.06);
-            border: 1px solid rgba(245, 176, 66, 0.08);
-            padding: 4px 16px;
-            border-radius: 30px;
-            font-size: 10px;
-            font-weight: 600;
-            color: #f5b042;
-            letter-spacing: 0.3px;
-            z-index: 1;
-            white-space: nowrap;
-        }
+  const openSupport = () => {
+    window.open(
+      "https://t.me/NijamulMal",
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
 
-        /* ============================================
-                   SETTINGS — preview card
-                   ============================================ */
-        .settings-preview {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(255, 255, 255, 0.015);
-            border-radius: 22px;
-            padding: 14px 18px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            margin-bottom: 14px;
-            backdrop-filter: blur(4px);
-            cursor: default;
-            transition: all 0.2s;
-        }
-        .settings-preview-left {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-        .settings-preview-left .set-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .settings-preview-left .set-text .set-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: #ffffff;
-            letter-spacing: -0.2px;
-        }
-        .settings-preview-left .set-text .set-desc {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.25);
-            margin-top: 1px;
-        }
-        .settings-preview .set-arrow {
-            color: rgba(255, 255, 255, 0.10);
-        }
+  const openLotteryFax = () => {
+    window.open(
+      "https://lotterysambad.one/",
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
 
-        /* ============================================
-                   100% REFUND GUARANTEE
-                   ============================================ */
-        .refund-section {
-            background: rgba(255, 255, 255, 0.015);
-            border-radius: 22px;
-            padding: 16px 18px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            margin-bottom: 18px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            backdrop-filter: blur(4px);
-            position: relative;
-            overflow: hidden;
-        }
-        .refund-section::before {
-            content: '';
-            position: absolute;
-            top: -50px;
-            right: -50px;
-            width: 180px;
-            height: 180px;
-            background: radial-gradient(circle, rgba(52, 211, 153, 0.03), transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-        }
-        .refund-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 16px;
-            background: rgba(52, 211, 153, 0.04);
-            border: 1px solid rgba(52, 211, 153, 0.06);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            z-index: 1;
-        }
-        .refund-text {
-            z-index: 1;
-        }
-        .refund-text .refund-title {
-            font-size: 15px;
-            font-weight: 700;
-            color: #ffffff;
-            letter-spacing: -0.2px;
-        }
-        .refund-text .refund-desc {
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.3);
-            margin-top: 1px;
-        }
-        .refund-badge {
-            margin-left: auto;
-            background: rgba(52, 211, 153, 0.04);
-            border: 1px solid rgba(52, 211, 153, 0.06);
-            padding: 3px 16px;
-            border-radius: 30px;
-            font-size: 10px;
-            font-weight: 600;
-            color: #34d399;
-            letter-spacing: 0.3px;
-            z-index: 1;
-            white-space: nowrap;
-        }
+  return (
+    <div className="min-h-screen bg-[#070b14] text-white selection:bg-amber-500/30 pb-28">
+      {/* Background ambience */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute -top-40 -left-40 w-80 h-80 rounded-full bg-amber-500/[0.04] blur-[100px]" />
+        <div className="absolute top-1/3 -right-40 w-96 h-96 rounded-full bg-indigo-500/[0.04] blur-[120px]" />
+        <div className="absolute bottom-0 left-1/3 w-80 h-80 rounded-full bg-emerald-500/[0.03] blur-[100px]" />
+      </div>
 
-        /* ============================================
-                   BOTTOM NAVIGATION — Home, Support, Settings
-                   ============================================ */
-        .bottom-nav {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 6px 4px 2px;
-            margin-top: 2px;
-            border-top: 1px solid rgba(255, 255, 255, 0.03);
-            position: relative;
-        }
+      <main className="relative z-10 max-w-md mx-auto px-4 pt-5">
+        {/* Header */}
+        <header className="mb-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[9px] uppercase tracking-[0.28em] text-white/35 font-semibold mb-1">
+                Premium Analytics
+              </p>
 
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 3px;
-            cursor: default;
-            padding: 4px 18px;
-            border-radius: 18px;
-            transition: all 0.25s ease;
-            position: relative;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .nav-item .nav-icon {
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: rgba(255, 255, 255, 0.15);
-            transition: all 0.3s ease;
-        }
-        .nav-item .nav-icon svg {
-            transition: transform 0.3s ease;
-        }
-        .nav-item .nav-label {
-            font-size: 9px;
-            font-weight: 600;
-            color: rgba(255, 255, 255, 0.12);
-            letter-spacing: 0.4px;
-            text-transform: uppercase;
-            transition: all 0.3s ease;
-        }
-
-        /* Active state — gold accent */
-        .nav-item.active .nav-icon {
-            color: #f5b042;
-        }
-        .nav-item.active .nav-icon svg {
-            transform: translateY(-1px) scale(1.05);
-        }
-        .nav-item.active .nav-label {
-            color: #f5b042;
-            font-weight: 700;
-        }
-        .nav-item.active::before {
-            content: '';
-            position: absolute;
-            top: -1px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 24px;
-            height: 2.5px;
-            border-radius: 4px;
-            background: linear-gradient(90deg, #f5b042, #e8922e);
-            box-shadow: 0 0 20px rgba(245, 176, 66, 0.25);
-        }
-
-        /* Hover states */
-        .nav-item:not(.active):hover .nav-icon {
-            color: rgba(255, 255, 255, 0.35);
-        }
-        .nav-item:not(.active):hover .nav-label {
-            color: rgba(255, 255, 255, 0.25);
-        }
-
-        /* ============================================
-                   RESPONSIVE
-                   ============================================ */
-        @media (max-width: 420px) {
-            .phone-frame {
-                border-radius: 32px;
-                padding: 14px 12px 6px;
-            }
-            .feature-grid {
-                gap: 10px;
-            }
-            .feature-card {
-                padding: 14px 12px 12px;
-                min-height: 94px;
-                border-radius: 18px;
-            }
-            .feature-card .card-icon {
-                width: 36px;
-                height: 36px;
-                border-radius: 12px;
-            }
-            .feature-card .card-title {
-                font-size: 13px;
-            }
-            .brand-text {
-                font-size: 17px;
-            }
-            .brand-icon {
-                width: 32px;
-                height: 32px;
-                font-size: 14px;
-                border-radius: 12px;
-            }
-            .live-strip {
-                padding: 8px 12px;
-                border-radius: 14px;
-            }
-            .info-strip {
-                padding: 8px 12px;
-                gap: 8px;
-                border-radius: 14px;
-            }
-            .lottery-fax {
-                padding: 12px 14px;
-                border-radius: 18px;
-            }
-            .settings-preview {
-                padding: 12px 14px;
-                border-radius: 18px;
-            }
-            .refund-section {
-                padding: 12px 14px;
-                border-radius: 18px;
-            }
-            .nav-item {
-                padding: 4px 12px;
-            }
-            .nav-item .nav-label {
-                font-size: 8px;
-            }
-        }
-
-        @media (max-width: 360px) {
-            .phone-frame {
-                border-radius: 24px;
-                padding: 10px 8px 4px;
-            }
-            .feature-grid {
-                gap: 8px;
-            }
-            .feature-card {
-                padding: 10px 10px 10px;
-                min-height: 78px;
-                border-radius: 14px;
-            }
-            .feature-card .card-title {
-                font-size: 12px;
-            }
-            .feature-card .card-desc {
-                font-size: 9px;
-            }
-            .feature-card .card-icon {
-                width: 30px;
-                height: 30px;
-                border-radius: 10px;
-            }
-            .feature-card .card-icon svg {
-                width: 14px;
-                height: 14px;
-            }
-            .brand-text {
-                font-size: 14px;
-            }
-            .brand-icon {
-                width: 28px;
-                height: 28px;
-                font-size: 12px;
-                border-radius: 10px;
-            }
-            .live-label {
-                font-size: 11px;
-            }
-            .live-count {
-                font-size: 9px;
-                padding: 2px 10px;
-            }
-            .info-badge {
-                font-size: 9px;
-            }
-            .info-update {
-                font-size: 9px;
-            }
-            .lottery-fax-left .fax-icon {
-                width: 36px;
-                height: 36px;
-                border-radius: 12px;
-            }
-            .lottery-fax-left .fax-text .fax-title {
-                font-size: 13px;
-            }
-            .lottery-fax-left .fax-text .fax-desc {
-                font-size: 9px;
-            }
-            .settings-preview-left .set-icon {
-                width: 34px;
-                height: 34px;
-                border-radius: 12px;
-            }
-            .settings-preview-left .set-text .set-title {
-                font-size: 13px;
-            }
-            .settings-preview-left .set-text .set-desc {
-                font-size: 9px;
-            }
-            .refund-icon {
-                width: 36px;
-                height: 36px;
-                border-radius: 12px;
-            }
-            .refund-text .refund-title {
-                font-size: 13px;
-            }
-            .refund-text .refund-desc {
-                font-size: 9px;
-            }
-            .refund-badge {
-                font-size: 8px;
-                padding: 2px 10px;
-            }
-            .nav-item {
-                padding: 4px 8px;
-            }
-            .nav-item .nav-icon {
-                width: 22px;
-                height: 22px;
-            }
-            .nav-item .nav-icon svg {
-                width: 18px;
-                height: 18px;
-            }
-        }
-
-        /* ============================================
-                   SCROLLBAR HIDE
-                   ============================================ */
-        .phone-frame::-webkit-scrollbar {
-            display: none;
-        }
-        .phone-frame {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-
-        /* ============================================
-                   UTILITY — shimmer (very subtle)
-                   ============================================ */
-        .shimmer-base {
-            position: relative;
-            overflow: hidden;
-        }
-        .shimmer-base::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 60%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.015), transparent);
-            animation: shimmer-slow 6s ease-in-out infinite;
-            pointer-events: none;
-        }
-        @keyframes shimmer-slow {
-            0% {
-                left: -100%;
-            }
-            100% {
-                left: 200%;
-            }
-        }
-    </style>
-</head>
-<body>
-
-    <div class="phone-frame">
-
-        <!-- ==========================================
-        STATUS BAR
-        ========================================== -->
-        <div class="status-bar">
-            <span class="time">9:41</span>
-            <div class="status-icons">
-                <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
-                    <rect x="0.5" y="8" width="3" height="4" rx="0.5" fill="currentColor" opacity="0.4"/>
-                    <rect x="4.5" y="6" width="3" height="6" rx="0.5" fill="currentColor" opacity="0.5"/>
-                    <rect x="8.5" y="4" width="3" height="8" rx="0.5" fill="currentColor" opacity="0.7"/>
-                    <rect x="12.5" y="0" width="3" height="12" rx="0.5" fill="currentColor" opacity="1"/>
-                </svg>
-                <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
-                    <path d="M1 6C1 3.23858 3.23858 1 6 1H10C12.7614 1 15 3.23858 15 6C15 8.76142 12.7614 11 10 11H6C3.23858 11 1 8.76142 1 6Z" stroke="currentColor" stroke-width="1.2" opacity="0.4"/>
-                    <path d="M4 6C4 4.34315 5.34315 3 7 3H9C10.6569 3 12 4.34315 12 6C12 7.65685 10.6569 9 9 9H7C5.34315 9 4 7.65685 4 6Z" fill="currentColor" opacity="0.5"/>
-                </svg>
+              <h1 className="text-[22px] leading-none font-black tracking-[-0.04em] bg-gradient-to-r from-white via-white to-white/55 bg-clip-text text-transparent">
+                LAST DIGIT PRO
+              </h1>
             </div>
-        </div>
 
-        <!-- ==========================================
-        HEADER — LAST DIGIT PRO
-        ========================================== -->
-        <div class="app-header">
-            <div class="brand">
-                <div class="brand-icon">✦</div>
-                <div class="brand-text">LAST DIGIT <span>PRO</span></div>
-            </div>
-            <div class="header-actions">
-                <div class="header-btn">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H5.78a1.65 1.65 0 0 0-1.51 1 1.65 1.65 0 0 0 .33 1.82l.04.04A10 10 0 0 0 12 20a10 10 0 0 0 6.36-4.96l.04-.04z"/>
-                        <path d="M12 4v4"/>
-                    </svg>
-                </div>
-            </div>
-        </div>
+            {/* Live indicator */}
+            <div className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-emerald-400/[0.06] border border-emerald-400/[0.12] shadow-[0_0_25px_rgba(52,211,153,0.06)]">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-50 animate-ping" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+              </span>
 
-        <!-- ==========================================
-        LIVE USER INDICATOR
-        ========================================== -->
-        <div class="live-strip shimmer-base">
-            <div class="live-strip-left">
-                <div class="live-dot"></div>
-                <div class="live-label"><strong id="activeCount">1,284</strong> active now</div>
+              <div className="flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-[10px] font-bold text-emerald-300 tracking-wide">
+                  {activeUsers} LIVE
+                </span>
+              </div>
             </div>
-            <div class="live-count">
-                <span>●</span> <span class="num" id="newCount">+12</span> <span>new</span>
-            </div>
-        </div>
+          </div>
+        </header>
 
-        <!-- ==========================================
-        SECURE / LIVE UPDATES STRIP
-        ========================================== -->
-        <div class="info-strip">
-            <div class="info-badge">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                </svg>
-                <span>Secure <span class="highlight">·</span> Encrypted</span>
-            </div>
-            <div class="info-divider"></div>
-            <div class="info-update">
-                <span>⏱</span> <span>Live updates</span>
-                <span class="live-badge">● LIVE</span>
-            </div>
-        </div>
+        {/* Secure / Live Updates */}
+        <section className="mb-5">
+          <div className="rounded-[22px] border border-white/[0.07] bg-white/[0.025] backdrop-blur-xl px-4 py-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+            <div className="flex items-center justify-center gap-3">
+              <div className="flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/55">
+                  Secure
+                </span>
+              </div>
 
-        <!-- ==========================================
-        FEATURE GRID — Lucky Search + Dear Digits
-        ========================================== -->
-        <div class="feature-grid">
-            <!-- Lucky Search -->
-            <div class="feature-card lucky shimmer-base">
+              <span className="w-1 h-1 rounded-full bg-white/20" />
+
+              <div className="flex items-center gap-1.5">
+                <Clock className="w-4 h-4 text-amber-400" />
+                <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/55">
+                  Live Updates
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Welcome / Overview panel */}
+        <section className="mb-5">
+          <div className="relative overflow-hidden rounded-[28px] border border-white/[0.08] bg-gradient-to-br from-white/[0.055] via-white/[0.02] to-transparent p-5 shadow-[0_20px_60px_rgba(0,0,0,0.22)]">
+            <div className="absolute -top-20 -right-20 w-48 h-48 rounded-full bg-amber-400/[0.07] blur-[70px]" />
+
+            <div className="relative">
+              <div className="flex items-center justify-between mb-5">
                 <div>
-                    <div class="card-icon">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f5b042" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="11" cy="11" r="8"/>
-                            <path d="m21 21-4.35-4.35"/>
-                            <path d="M11 8v6M8 11h6"/>
-                        </svg>
-                    </div>
-                    <div class="card-title">Lucky Search</div>
-                    <div class="card-desc">VIP prediction tool</div>
-                </div>
-                <div class="card-tag">Instant results</div>
-            </div>
+                  <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-white/35 mb-1.5">
+                    Dashboard
+                  </p>
 
-            <!-- Dear Digits -->
-            <div class="feature-card digits shimmer-base">
+                  <h2 className="text-xl font-bold tracking-tight text-white">
+                    Your Premium Tools
+                  </h2>
+                </div>
+
+                <div className="flex items-center justify-center w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-300 to-orange-500 shadow-[0_8px_25px_rgba(245,158,11,0.18)]">
+                  <CheckCircle className="w-5 h-5 text-slate-950" />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between rounded-2xl border border-white/[0.06] bg-black/20 px-4 py-3">
                 <div>
-                    <div class="card-icon">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M12 2v4M12 22v-4M4 12H2M22 12h-2M19.07 4.93l-2.83 2.83M6.9 17.1l-2.83 2.83M17.1 6.9l2.83-2.83M4.93 19.07l2.83-2.83"/>
-                            <circle cx="12" cy="12" r="3"/>
-                        </svg>
-                    </div>
-                    <div class="card-title">Dear Digits</div>
-                    <div class="card-desc">60-day chart analysis</div>
+                  <p className="text-[9px] uppercase tracking-[0.16em] text-white/35 font-semibold">
+                    System Status
+                  </p>
+
+                  <p className="mt-1 text-sm font-semibold text-white">
+                    All systems operational
+                  </p>
                 </div>
-                <div class="card-tag">Daily updates</div>
+
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.5)]" />
+                  <span className="text-[10px] font-bold text-emerald-400">
+                    ONLINE
+                  </span>
+                </div>
+              </div>
             </div>
+          </div>
+        </section>
+
+        {/* Feature grid */}
+        <section className="mb-4">
+          <div className="grid grid-cols-2 gap-3">
+            {/* Lucky Search */}
+            <button
+              type="button"
+              onClick={() => setLocation("/lucky-search")}
+              className="group relative overflow-hidden text-left rounded-[24px] border border-violet-400/[0.13] bg-gradient-to-br from-violet-500/[0.08] via-white/[0.025] to-transparent p-4 min-h-[160px] transition-all duration-300 active:scale-[0.98]"
+            >
+              <div className="absolute -top-10 -right-10 w-28 h-28 rounded-full bg-violet-500/[0.08] blur-[40px]" />
+
+              <div className="relative">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-[17px] bg-gradient-to-br from-violet-500 to-purple-700 shadow-[0_10px_30px_rgba(139,92,246,0.22)]">
+                    <Search className="w-6 h-6 text-white" />
+                  </div>
+
+                  <Lock className="w-4 h-4 text-amber-400/80" />
+                </div>
+
+                <div className="mt-7">
+                  <h3 className="text-[16px] font-bold text-white tracking-tight">
+                    Lucky Search
+                  </h3>
+
+                  <p className="mt-1 text-[11px] leading-relaxed text-white/40">
+                    VIP prediction tool
+                  </p>
+                </div>
+
+                <div className="mt-3 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.15em] text-violet-300/70">
+                  Explore
+                  <ArrowRight className="w-3 h-3" />
+                </div>
+              </div>
+            </button>
+
+            {/* Dear Digits */}
+            <button
+              type="button"
+              onClick={() => setLocation("/dear-digits")}
+              className="group relative overflow-hidden text-left rounded-[24px] border border-blue-400/[0.13] bg-gradient-to-br from-blue-500/[0.08] via-white/[0.025] to-transparent p-4 min-h-[160px] transition-all duration-300 active:scale-[0.98]"
+            >
+              <div className="absolute -top-10 -right-10 w-28 h-28 rounded-full bg-blue-500/[0.08] blur-[40px]" />
+
+              <div className="relative">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-[17px] bg-gradient-to-br from-cyan-400 to-blue-600 shadow-[0_10px_30px_rgba(14,165,233,0.22)]">
+                    <TrendingUp className="w-6 h-6 text-white" />
+                  </div>
+
+                  <span className="text-[8px] font-bold uppercase tracking-wider text-blue-300/60">
+                    60 Days
+                  </span>
+                </div>
+
+                <div className="mt-7">
+                  <h3 className="text-[16px] font-bold text-white tracking-tight">
+                    Dear Digits
+                  </h3>
+
+                  <p className="mt-1 text-[11px] leading-relaxed text-white/40">
+                    60-day chart analysis
+                  </p>
+                </div>
+
+                <div className="mt-3 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.15em] text-blue-300/70">
+                  Analyze
+                  <ArrowRight className="w-3 h-3" />
+                </div>
+              </div>
+            </button>
+
+            {/* Lottery Fax */}
+            <button
+              type="button"
+              onClick={openLotteryFax}
+              className="group relative overflow-hidden text-left rounded-[24px] border border-pink-400/[0.13] bg-gradient-to-br from-pink-500/[0.07] via-white/[0.025] to-transparent p-4 min-h-[160px] transition-all duration-300 active:scale-[0.98]"
+            >
+              <div className="relative">
+                <div className="flex items-center justify-center w-12 h-12 rounded-[17px] bg-gradient-to-br from-pink-500 to-rose-600 shadow-[0_10px_30px_rgba(236,72,153,0.2)]">
+                  <FileText className="w-6 h-6 text-white" />
+                </div>
+
+                <div className="mt-7">
+                  <h3 className="text-[16px] font-bold text-white tracking-tight">
+                    Lottery Fax
+                  </h3>
+
+                  <p className="mt-1 text-[11px] leading-relaxed text-white/40">
+                    Official results archive
+                  </p>
+                </div>
+
+                <div className="mt-3 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.15em] text-pink-300/70">
+                  View Archive
+                  <ArrowRight className="w-3 h-3" />
+                </div>
+              </div>
+            </button>
+
+            {/* Settings */}
+            <button
+              type="button"
+              onClick={handleSettingsOpen}
+              className="group relative overflow-hidden text-left rounded-[24px] border border-white/[0.09] bg-gradient-to-br from-white/[0.055] via-white/[0.02] to-transparent p-4 min-h-[160px] transition-all duration-300 active:scale-[0.98]"
+            >
+              <div className="relative">
+                <div className="flex items-center justify-center w-12 h-12 rounded-[17px] bg-gradient-to-br from-slate-500 to-slate-700 shadow-[0_10px_30px_rgba(100,116,139,0.16)]">
+                  <Settings className="w-6 h-6 text-white" />
+                </div>
+
+                <div className="mt-7">
+                  <h3 className="text-[16px] font-bold text-white tracking-tight">
+                    Settings
+                  </h3>
+
+                  <p className="mt-1 text-[11px] leading-relaxed text-white/40">
+                    App preferences
+                  </p>
+                </div>
+
+                <div className="mt-3 flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-[0.15em] text-white/40">
+                  Configure
+                  <ArrowRight className="w-3 h-3" />
+                </div>
+              </div>
+            </button>
+          </div>
+        </section>
+
+        {/* Refund Guarantee */}
+        <section className="mb-5">
+          <div className="relative overflow-hidden rounded-[25px] border border-emerald-400/[0.11] bg-gradient-to-r from-emerald-400/[0.045] via-white/[0.025] to-transparent p-4">
+            <div className="absolute -right-10 -top-10 w-32 h-32 rounded-full bg-emerald-400/[0.05] blur-[45px]" />
+
+            <div className="relative flex items-center gap-3">
+              <div className="flex items-center justify-center w-12 h-12 rounded-[17px] bg-emerald-400/[0.07] border border-emerald-400/[0.09]">
+                <ShieldCheck className="w-6 h-6 text-emerald-400" />
+              </div>
+
+              <div className="flex-1">
+                <h3 className="text-[14px] font-bold text-white">
+                  100% Refund Guarantee
+                </h3>
+
+                <p className="mt-1 text-[10px] text-white/40">
+                  Predictions miss, payment refunded.
+                </p>
+              </div>
+
+              <ArrowRight className="w-4 h-4 text-white/20" />
+            </div>
+          </div>
+        </section>
+
+        {/* Bottom information */}
+        <section className="text-center pb-2">
+          <p className="text-[9px] uppercase tracking-[0.2em] text-white/20">
+            Premium Experience
+          </p>
+        </section>
+      </main>
+
+      {/* Premium bottom navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50">
+        <div className="max-w-md mx-auto px-3 pb-3">
+          <div className="flex items-center justify-around rounded-[28px] border border-white/[0.08] bg-[#0b101c]/95 backdrop-blur-2xl px-3 py-2 shadow-[0_-15px_50px_rgba(0,0,0,0.35)]">
+
+            {/* Home */}
+            <button
+              type="button"
+              className="flex flex-col items-center justify-center min-w-[72px] py-1.5"
+            >
+              <div className="flex items-center justify-center w-11 h-11 rounded-[17px] bg-gradient-to-br from-amber-300 via-amber-500 to-orange-600 text-slate-950 shadow-[0_8px_25px_rgba(245,158,11,0.22)]">
+                <HomeIcon className="w-5 h-5" />
+              </div>
+
+              <span className="mt-1 text-[9px] font-black uppercase tracking-wider text-amber-400">
+                Home
+              </span>
+            </button>
+
+            {/* Support */}
+            <button
+              type="button"
+              onClick={openSupport}
+              className="flex flex-col items-center justify-center min-w-[72px] py-1.5"
+            >
+              <div className="flex items-center justify-center w-11 h-11 rounded-[17px] bg-gradient-to-br from-cyan-400 to-blue-600 text-white shadow-[0_8px_25px_rgba(14,165,233,0.18)]">
+                <Send className="w-5 h-5" />
+              </div>
+
+              <span className="mt-1 text-[9px] font-black uppercase tracking-wider text-blue-400">
+                Support
+              </span>
+            </button>
+
+            {/* Settings */}
+            <button
+              type="button"
+              onClick={handleSettingsOpen}
+              className="flex flex-col items-center justify-center min-w-[72px] py-1.5"
+            >
+              <div className="flex items-center justify-center w-11 h-11 rounded-[17px] bg-gradient-to-br from-slate-500 to-slate-700 text-white shadow-[0_8px_25px_rgba(100,116,139,0.15)]">
+                <Settings className="w-5 h-5" />
+              </div>
+
+              <span className="mt-1 text-[9px] font-black uppercase tracking-wider text-white/45">
+                Settings
+              </span>
+            </button>
+          </div>
         </div>
+      </nav>
 
-        <!-- ==========================================
-        LOTTERY FAX
-        ========================================== -->
-        <div class="lottery-fax shimmer-base">
-            <div class="lottery-fax-left">
-                <div class="fax-icon">
-                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <rect x="4" y="2" width="16" height="20" rx="2"/>
-                        <path d="M8 6h8M8 10h6M8 14h8M8 18h6"/>
-                    </svg>
-                </div>
-                <div class="fax-text">
-                    <div class="fax-title">Lottery Fax</div>
-                    <div class="fax-desc">Official results archive</div>
-                </div>
-            </div>
-            <div class="fax-badge">● New</div>
-        </div>
+      {/* Existing settings modal */}
+      <SettingsModal
+        isOpen={showSettings}
+        onClose={handleSettingsClose}
+        onOpenPrivacy={handlePrivacyOpen}
+      />
 
-        <!-- ==========================================
-        SETTINGS — preview
-        ========================================== -->
-        <div class="settings-preview shimmer-base">
-            <div class="settings-preview-left">
-                <div class="set-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-                    </svg>
-                </div>
-                <div class="set-text">
-                    <div class="set-title">Settings</div>
-                    <div class="set-desc">App preferences &amp; account</div>
-                </div>
-            </div>
-            <div class="set-arrow">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="9 18 15 12 9 6"/>
-                </svg>
-            </div>
-        </div>
-
-        <!-- ==========================================
-        100% REFUND GUARANTEE
-        ========================================== -->
-        <div class="refund-section shimmer-base">
-            <div class="refund-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                    <path d="m9 12 2 2 4-4"/>
-                </svg>
-            </div>
-            <div class="refund-text">
-                <div class="refund-title">100% Refund Guarantee</div>
-                <div class="refund-desc">Predictions miss, payment refunded.</div>
-            </div>
-            <div class="refund-badge">Protected</div>
-        </div>
-
-        <!-- ==========================================
-        BOTTOM NAVIGATION — Home · Support · Settings
-        ========================================== -->
-        <div class="bottom-nav">
-            <!-- Home — active -->
-            <div class="nav-item active">
-                <div class="nav-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-                        <polyline points="9 22 9 12 15 12 15 22"/>
-                    </svg>
-                </div>
-                <div class="nav-label">Home</div>
-            </div>
-
-            <!-- Support -->
-            <div class="nav-item">
-                <div class="nav-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                        <path d="M12 17h.01"/>
-                    </svg>
-                </div>
-                <div class="nav-label">Support</div>
-            </div>
-
-            <!-- Settings -->
-            <div class="nav-item">
-                <div class="nav-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-                    </svg>
-                </div>
-                <div class="nav-label">Settings</div>
-            </div>
-        </div>
-
+      {/* Existing privacy modal */}
+      <PrivacyPolicyModal
+        isOpen={showPrivacy}
+        onClose={handlePrivacyClose}
+      />
     </div>
-    <!-- end phone-frame -->
-
-    <!-- ==========================================
-    JAVASCRIPT — dynamic live user count
-    ========================================== -->
-    <script>
-        (function() {
-            const activeEl = document.getElementById('activeCount');
-            const newEl = document.getElementById('newCount');
-
-            let activeUsers = 1284;
-
-            function updateActiveUsers() {
-                const now = new Date();
-                const hour = now.getHours();
-                const minute = now.getMinutes();
-
-                let min = 10,
-                    max = 150;
-
-                if (hour === 12 && minute <= 56) {
-                    min = 350;
-                    max = 500;
-                } else if ((hour === 17 && minute >= 30) || (hour >= 18 && hour < 20)) {
-                    min = 350;
-                    max = 500;
-                } else if (hour >= 20 || hour < 12) {
-                    min = 10;
-                    max = 40;
-                } else {
-                    min = 50;
-                    max = 200;
-                }
-
-                const randomUsers = Math.floor(Math.random() * (max - min + 1)) + min;
-                // smooth transition: blend toward new value
-                const diff = randomUsers - activeUsers;
-                const step = Math.sign(diff) * Math.min(Math.abs(diff), 12);
-                activeUsers += step;
-                if (Math.abs(activeUsers - randomUsers) < 3) activeUsers = randomUsers;
-
-                // format with commas
-                const formatted = activeUsers.toLocaleString();
-                if (activeEl) activeEl.textContent = formatted;
-
-                // random "new" count
-                const newCount = Math.floor(Math.random() * 8) + 4;
-                if (newEl) newEl.textContent = '+' + newCount;
-            }
-
-            // initial
-            updateActiveUsers();
-
-            // update every 4.5 seconds
-            setInterval(updateActiveUsers, 4500);
-
-            // also update on visibility change to keep fresh
-            document.addEventListener('visibilitychange', function() {
-                if (!document.hidden) updateActiveUsers();
-            });
-        })();
-    </script>
-
-</body>
-</html>
+  );
+}

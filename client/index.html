@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>VIP 71 - Premium Lottery Predictions</title>
-    
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="VIP 71" />
@@ -18,17 +18,696 @@
     <meta property="twitter:image" content="https://lastdigitpro.online/og-image.png" />
     <meta property="twitter:site" content="@replit" />
 
-    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="manifest" href="/manifest.webmanifest" />
-<meta name="theme-color" content="#000000" />
-<link rel="apple-touch-icon" href="/icons/icon-192.png" />
-  </head>
-  <body class="bg-slate-900 selection:bg-amber-500/30">
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  <script src="https://pl28671157.effectivegatecpm.com/3a/2a/92/3a2a92e2b10efec8d45b1b792562493d.js"></script>
-  </body>
-</html>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* ── Reset & Base ── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f172a;
+            color: #f1f5f9;
+            min-height: 100vh;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: #0f172a;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            margin: 0;
+            background-image: radial-gradient(ellipse at 20% 50%, rgba(251, 191, 36, 0.05) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 50%, rgba(245, 158, 11, 0.04) 0%, transparent 60%);
+        }
+
+        /* ── Glass Card ── */
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 32px;
+            border: 1px solid rgba(251, 191, 36, 0.12);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            padding: 28px 24px 32px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 20%, rgba(251, 191, 36, 0.03), transparent 60%);
+            pointer-events: none;
+        }
+
+        /* ── Glow ring ── */
+        .glow-ring {
+            position: absolute;
+            top: -80px;
+            right: -80px;
+            width: 240px;
+            height: 240px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(251, 191, 36, 0.08), transparent 70%);
+            pointer-events: none;
+            filter: blur(40px);
+        }
+
+        .glow-ring-bottom {
+            position: absolute;
+            bottom: -100px;
+            left: -100px;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.05), transparent 70%);
+            pointer-events: none;
+            filter: blur(50px);
+        }
+
+        /* ── Header ── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 900;
+            color: #0f172a;
+            box-shadow: 0 8px 20px -6px rgba(251, 191, 36, 0.3);
+        }
+
+        .brand-name {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand-name span {
+            font-weight: 400;
+            -webkit-text-fill-color: #94a3b8;
+            color: #94a3b8;
+        }
+
+        .badge {
+            background: rgba(251, 191, 36, 0.12);
+            border: 1px solid rgba(251, 191, 36, 0.15);
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: #fbbf24;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ── Status Bar ── */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 100px;
+            padding: 4px 14px 4px 6px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            font-size: 12px;
+            font-weight: 500;
+            color: #94a3b8;
+            position: relative;
+            z-index: 2;
+            margin-bottom: 20px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        .status-dot.active {
+            background: #22c55e;
+            box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+        }
+
+        .status-dot.inactive {
+            background: #ef4444;
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.3);
+        }
+
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(0.85);
+            }
+        }
+
+        /* ── Prediction Display ── */
+        .prediction-section {
+            text-align: center;
+            padding: 20px 0 12px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .prediction-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+
+        .prediction-number {
+            font-size: 72px;
+            font-weight: 900;
+            letter-spacing: -3px;
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+            text-shadow: 0 0 60px rgba(251, 191, 36, 0.15);
+            transition: transform 0.3s ease;
+        }
+
+        .prediction-number.pop {
+            animation: pop-number 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes pop-number {
+            0% {
+                transform: scale(0.6);
+                opacity: 0.2;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .prediction-sub {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-top: 4px;
+            font-weight: 400;
+        }
+
+        .prediction-sub strong {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        /* ── Digits Grid ── */
+        .digits-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin: 20px 0 16px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .digit-card {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 16px;
+            padding: 12px 4px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .digit-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.04), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .digit-card:hover::after {
+            opacity: 1;
+        }
+
+        .digit-card .digit {
+            font-size: 28px;
+            font-weight: 800;
+            color: #f1f5f9;
+            position: relative;
+            z-index: 1;
+            letter-spacing: -0.5px;
+        }
+
+        .digit-card .digit.highlight {
+            color: #fbbf24;
+        }
+
+        .digit-card .digit-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            margin-top: 4px;
+            display: block;
+            font-weight: 600;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── Action Buttons ── */
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 18px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 18px;
+            border-radius: 14px;
+            font-weight: 600;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            color: #0f172a;
+            box-shadow: 0 8px 24px -6px rgba(251, 191, 36, 0.35);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 12px 32px -6px rgba(251, 191, 36, 0.5);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.04);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        .btn-outline:hover {
+            background: rgba(251, 191, 36, 0.06);
+            border-color: rgba(251, 191, 36, 0.3);
+        }
+
+        .btn-full {
+            grid-column: 1 / -1;
+        }
+
+        /* ── Subscription Panel ── */
+        .sub-panel {
+            margin-top: 20px;
+            padding: 18px 20px;
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            position: relative;
+            z-index: 2;
+        }
+
+        .sub-panel .sub-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .sub-panel .sub-status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sub-panel .sub-status .label {
+            font-size: 14px;
+            color: #cbd5e1;
+        }
+
+        .sub-panel .sub-status .value {
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .sub-panel .sub-status .value.active {
+            color: #22c55e;
+        }
+
+        .sub-panel .sub-status .value.inactive {
+            color: #f87171;
+        }
+
+        .sub-panel .sub-expiry {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 6px;
+        }
+
+        .sub-panel .sub-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .sub-panel .sub-actions .btn {
+            flex: 1;
+            padding: 10px;
+            font-size: 12px;
+            border-radius: 10px;
+        }
+
+        /* ── History ── */
+        .history-section {
+            margin-top: 18px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .history-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #475569;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .history-list {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .history-item {
+            background: rgba(15, 23, 42, 0.4);
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .history-item .h-date {
+            font-weight: 400;
+            font-size: 9px;
+            color: #475569;
+            margin-left: 4px;
+        }
+
+        .history-item.today {
+            color: #fbbf24;
+            border-color: rgba(251, 191, 36, 0.15);
+            background: rgba(251, 191, 36, 0.04);
+        }
+
+        /* ── Footer ── */
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 11px;
+            color: #334155;
+            position: relative;
+            z-index: 2;
+            letter-spacing: 0.3px;
+        }
+
+        .footer a {
+            color: #475569;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: #94a3b8;
+        }
+
+        /* ── Toast ── */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 14px 28px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.8);
+            font-size: 14px;
+            font-weight: 500;
+            color: #f1f5f9;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 999;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast.success {
+            border-color: rgba(34, 197, 94, 0.2);
+        }
+        .toast.error {
+            border-color: rgba(239, 68, 68, 0.2);
+        }
+        .toast.info {
+            border-color: rgba(251, 191, 36, 0.2);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 420px) {
+            .glass-card {
+                padding: 20px 16px 24px;
+                border-radius: 24px;
+            }
+            .prediction-number {
+                font-size: 54px;
+            }
+            .digits-grid {
+                gap: 6px;
+            }
+            .digit-card .digit {
+                font-size: 22px;
+            }
+            .digit-card .digit-label {
+                font-size: 8px;
+            }
+            .actions {
+                grid-template-columns: 1fr;
+            }
+            .brand-name {
+                font-size: 17px;
+            }
+            .sub-panel .sub-status {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+            .sub-panel .sub-actions {
+                flex-direction: column;
+            }
+            .header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .badge {
+                font-size: 8px;
+                padding: 3px 10px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .prediction-number {
+                font-size: 42px;
+            }
+            .digits-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .digit-card .digit {
+                font-size: 20px;
+            }
+        }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        /* ── Selection ── */
+        ::selection {
+            background: rgba(251, 191, 36, 0.25);
+            color: #f1f5f9;
+        }
+
+        /* ── Utility ── */
+        .text-center {
+            text-align: center;
+        }
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .mt-12 {
+            margin-top: 12px;
+        }
+        .gap-6 {
+            gap: 6px;
+        }
+        .flex {
+            display: flex;
+        }
+        .items-center {
+            align-items: center;
+        }
+        .justify-center {
+            justify-content: center;
+        }
+        .w-full {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="glass-card">
+            <!-- Glow effects -->
+            <div class="glow-ring"></div>
+            <div class="glow-ring-bottom"></div>
+
+            <!-- ── Header ── -->
+            <header class="header">
+                <div class="brand">
+                    <div class="brand-icon">71</div>
+                    <span class="brand-name">VIP<span>71</span></span>
+                </div>
+                <span class="badge">★ Premium</span>
+            </header>
+
+            <!-- ── Status Bar ── -->
+            <div class="status-bar" id="statusBar">
+                <span class="status-dot active" id="statusDot"></span>
+                <span id="statusText">Live · Predictions ready</span>
+                <span style="margin-left:auto;color:#475569;font-size:10px;" id="timeDisplay"></span>
+            </div>
+
+            <!-- ── Prediction ── -->
+            <section class="prediction-section">
+                <div class="prediction-label">⭐ Today's Lucky Pick</div>
+                <div class="pred

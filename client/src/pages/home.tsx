@@ -53,7 +53,7 @@ export default function Home() {
   const [showWithdraw, setShowWithdraw] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
-  const [showReferral, setShowReferral] = useState(false); // NEW
+  const [showReferral, setShowReferral] = useState(false);
 
   const [activeUsers, setActiveUsers] = useState(37);
 
@@ -65,7 +65,7 @@ export default function Home() {
 
   /* -------------------------------------------------------
      VIRTUAL COIN BALANCE
-     ------------------------------------------------------- */
+  ------------------------------------------------------- */
 
   const [coins, setCoins] = useState(0);
 
@@ -74,10 +74,10 @@ export default function Home() {
   const [promoUsed, setPromoUsed] = useState(false);
 
   /* -------------------------------------------------------
-     REFERRAL STATE (NEW)
+     REFERRAL STATE
   ------------------------------------------------------- */
 
-  const [referralCode] = useState("REF" + Math.floor(1000 + Math.random() * 9000)); // random 4-digit code
+  const [referralCode] = useState("REF" + Math.floor(1000 + Math.random() * 9000));
   const [referralBonus, setReferralBonus] = useState(0);
   const [referralInput, setReferralInput] = useState("");
   const [referralMessage, setReferralMessage] = useState("");
@@ -87,9 +87,7 @@ export default function Home() {
      ONE FIGURE
   ------------------------------------------------------- */
 
-  const [quantities, setQuantities] = useState<Record<number, number>>(
-    {}
-  );
+  const [quantities, setQuantities] = useState<Record<number, number>>({});
 
   /* -------------------------------------------------------
      ACTIVE USER ANIMATION
@@ -99,16 +97,10 @@ export default function Home() {
     const updateUsers = () => {
       const min = 24;
       const max = 58;
-
-      setActiveUsers(
-        Math.floor(Math.random() * (max - min + 1)) + min
-      );
+      setActiveUsers(Math.floor(Math.random() * (max - min + 1)) + min);
     };
-
     updateUsers();
-
     const interval = setInterval(updateUsers, 5000);
-
     return () => clearInterval(interval);
   }, []);
 
@@ -133,17 +125,15 @@ export default function Home() {
   const totalFigureCoins = totalQuantity * COINS_PER_QUANTITY;
 
   /* -------------------------------------------------------
-     PROMO CODE (existing, unchanged)
+     PROMO CODE
   ------------------------------------------------------- */
 
   const activatePromo = () => {
     const code = promoCode.trim().toUpperCase();
-
     if (promoUsed) {
       setPromoMessage("Promo code already used.");
       return;
     }
-
     if (code === "1000NSK") {
       setCoins((current) => current + 1000);
       setPromoUsed(true);
@@ -151,26 +141,20 @@ export default function Home() {
       setPromoMessage("1,000 virtual coins added.");
       return;
     }
-
     setPromoMessage("Invalid promo code.");
   };
 
   /* -------------------------------------------------------
-     REFERRAL LOGIC (NEW, SIMULATED)
+     REFERRAL LOGIC
   ------------------------------------------------------- */
 
   const applyReferral = () => {
     const code = referralInput.trim().toUpperCase();
-
     if (referralApplied) {
       setReferralMessage("Referral already applied.");
       return;
     }
-
-    // Simulate: if the code matches any valid referral (we'll just accept any code for demo)
     if (code.length >= 4) {
-      // Simulate that the referred person adds coins via promo
-      // We'll give 10% bonus of 1000 coins = 100 coins
       setCoins((current) => current + 100);
       setReferralBonus((prev) => prev + 100);
       setReferralApplied(true);
@@ -188,7 +172,7 @@ export default function Home() {
   };
 
   /* -------------------------------------------------------
-     QUANTITY (unchanged)
+     QUANTITY CONTROLS
   ------------------------------------------------------- */
 
   const increaseQuantity = (digit: number) => {
@@ -201,21 +185,39 @@ export default function Home() {
   const decreaseQuantity = (digit: number) => {
     setQuantities((current) => {
       const next = { ...current };
-
       const value = next[digit] || 0;
-
       if (value <= 1) {
         delete next[digit];
       } else {
         next[digit] = value - 1;
       }
-
       return next;
     });
   };
 
   /* -------------------------------------------------------
-     OPEN EXTERNAL PAGES (unchanged)
+     ONE FIGURE CONTINUE -> TELEGRAM
+  ------------------------------------------------------- */
+
+  const handleOneFigureContinue = () => {
+    if (selectedDigits.length === 0) return;
+
+    const message =
+      `📊 *One Figure Selection*\n` +
+      `━━━━━━━━━━━━━━━━━\n` +
+      selectedDigits.map(d => `▸ ${d} : ${quantities[d]} time(s)`).join('\n') +
+      `\n━━━━━━━━━━━━━━━━━\n` +
+      `📦 Total Quantity : ${totalQuantity}\n` +
+      `🪙 Total Coins    : ${totalFigureCoins}\n` +
+      `🕒 ${new Date().toLocaleString()}`;
+
+    const encoded = encodeURIComponent(message);
+    const url = `tg://resolve?domain=NskNijamul&text=${encoded}`;
+    window.open(url, '_blank');
+  };
+
+  /* -------------------------------------------------------
+     OPEN EXTERNAL PAGES
   ------------------------------------------------------- */
 
   const openYouTube = () => {
@@ -243,7 +245,7 @@ export default function Home() {
   };
 
   /* -------------------------------------------------------
-     SETTINGS (unchanged)
+     SETTINGS
   ------------------------------------------------------- */
 
   const openSettings = () => {
@@ -256,7 +258,6 @@ export default function Home() {
 
   const openPrivacy = () => {
     setShowSettings(false);
-
     setTimeout(() => {
       setShowPrivacy(true);
     }, 120);
@@ -287,7 +288,7 @@ export default function Home() {
   };
 
   /* -------------------------------------------------------
-     SHARED UI
+     RENDER
   ------------------------------------------------------- */
 
   return (
@@ -585,11 +586,10 @@ export default function Home() {
         </section>
       </main>
 
-      {/* BOTTOM NAVIGATION (5 tabs - Home, Figure, Support, Referral, Settings) */}
+      {/* BOTTOM NAVIGATION (5 tabs) */}
       <nav className="fixed bottom-0 left-0 right-0 z-50">
         <div className="mx-auto max-w-md px-3 pb-4">
           <div className={`flex items-center justify-between rounded-[34px] border-2 border-white/10 px-3 py-2.5 backdrop-blur-2xl ${isDarkMode ? "bg-black/70" : "bg-white/80 shadow-lg"}`}>
-            {/* Home */}
             <button type="button" className="flex min-w-[45px] flex-col items-center py-1.5 transition hover:scale-110">
               <div className="flex h-10 w-10 items-center justify-center rounded-[16px] bg-gradient-to-br from-cyan-400 to-blue-600 shadow-md">
                 <HomeIcon className="h-5 w-5 text-white" />
@@ -597,7 +597,6 @@ export default function Home() {
               <span className="mt-1.5 text-[6px] font-black uppercase tracking-wider text-cyan-300">Home</span>
             </button>
 
-            {/* Figure */}
             <button type="button" onClick={() => setShowOneFigure(true)} className="flex min-w-[45px] flex-col items-center py-1.5 transition hover:scale-110">
               <div className="flex h-10 w-10 items-center justify-center rounded-[16px] bg-gradient-to-br from-orange-400 to-red-600 shadow-md">
                 <Dices className="h-5 w-5 text-white" />
@@ -605,7 +604,6 @@ export default function Home() {
               <span className="mt-1.5 text-[6px] font-black uppercase tracking-wider text-orange-300">Figure</span>
             </button>
 
-            {/* Support */}
             <button type="button" onClick={openSupport} className="flex min-w-[45px] flex-col items-center py-1.5 transition hover:scale-110">
               <div className="flex h-10 w-10 items-center justify-center rounded-[16px] bg-gradient-to-br from-blue-400 to-indigo-600 shadow-md">
                 <Send className="h-5 w-5 text-white" />
@@ -613,7 +611,6 @@ export default function Home() {
               <span className="mt-1.5 text-[6px] font-black uppercase tracking-wider text-blue-300">Support</span>
             </button>
 
-            {/* Referral (NEW) */}
             <button type="button" onClick={() => setShowReferral(true)} className="flex min-w-[45px] flex-col items-center py-1.5 transition hover:scale-110">
               <div className="flex h-10 w-10 items-center justify-center rounded-[16px] bg-gradient-to-br from-fuchsia-400 to-purple-600 shadow-md">
                 <UserPlus className="h-5 w-5 text-white" />
@@ -621,7 +618,6 @@ export default function Home() {
               <span className="mt-1.5 text-[6px] font-black uppercase tracking-wider text-fuchsia-300">Refer</span>
             </button>
 
-            {/* Settings */}
             <button type="button" onClick={openSettings} className="flex min-w-[45px] flex-col items-center py-1.5 transition hover:scale-110">
               <div className="flex h-10 w-10 items-center justify-center rounded-[16px] bg-gradient-to-br from-slate-500 to-slate-800 shadow-md">
                 <Settings className="h-5 w-5 text-white" />
@@ -633,7 +629,7 @@ export default function Home() {
       </nav>
 
       {/* =====================================================
-          BALANCE MODAL (unchanged)
+          BALANCE MODAL
       ====================================================== */}
       {showBalance && (
         <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/90 p-4 backdrop-blur-xl sm:items-center">
@@ -706,7 +702,7 @@ export default function Home() {
                   </p>
                 )}
               </div>
-              {/* Package preview (kept) */}
+              {/* Package preview */}
               <div className="mt-5">
                 <p className="mb-2.5 text-[7px] font-bold uppercase tracking-[0.18em] text-white/30">
                   Available Packages
@@ -730,7 +726,7 @@ export default function Home() {
       )}
 
       {/* =====================================================
-          ONE FIGURE MODAL (unchanged, redesigned earlier)
+          ONE FIGURE MODAL (UPDATED)
       ====================================================== */}
       {showOneFigure && (
         <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/90 p-4 backdrop-blur-xl sm:items-center">
@@ -834,18 +830,28 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-              <button type="button" disabled className="flex w-full items-center justify-center gap-3 rounded-[20px] bg-gradient-to-r from-cyan-400 to-fuchsia-400 py-4 text-[9px] font-black uppercase tracking-[0.15em] text-white opacity-50 shadow-md">
+              {/* UPDATED CONTINUE BUTTON */}
+              <button
+                type="button"
+                onClick={handleOneFigureContinue}
+                disabled={selectedDigits.length === 0}
+                className={`flex w-full items-center justify-center gap-3 rounded-[20px] bg-gradient-to-r from-cyan-400 to-fuchsia-400 py-4 text-[9px] font-black uppercase tracking-[0.15em] text-white shadow-md ${
+                  selectedDigits.length === 0
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:shadow-lg transition hover:scale-[1.02] active:scale-[0.98]"
+                }`}
+              >
                 Continue
                 <ArrowRight className="h-5 w-5" />
               </button>
-              <p className="mt-3 text-center text-[7px] text-white/25">Game action is currently disabled in this UI build.</p>
+              {/* “Game action is currently disabled” message removed */}
             </div>
           </div>
         </div>
       )}
 
       {/* =====================================================
-          REFERRAL MODAL (NEW)
+          REFERRAL MODAL
       ====================================================== */}
       {showReferral && (
         <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/90 p-4 backdrop-blur-xl sm:items-center">
@@ -871,7 +877,6 @@ export default function Home() {
                 </button>
               </div>
 
-              {/* Your Referral Code */}
               <div className="mb-5 rounded-[28px] border-2 border-fuchsia-400/20 bg-fuchsia-400/[0.05] p-5 backdrop-blur-sm">
                 <p className="text-[7px] font-bold uppercase tracking-[0.2em] text-white/40">
                   Your Referral Code
@@ -889,10 +894,8 @@ export default function Home() {
                 <p className="mt-3 text-[8px] text-white/40">
                   Share this code with friends. When they add coins, you earn 10% bonus!
                 </p>
-                {/* Share button */}
                 <button
                   onClick={() => {
-                    // Simulate share
                     if (navigator.share) {
                       navigator.share({
                         title: "Join Last Digit Pro!",
@@ -915,7 +918,6 @@ export default function Home() {
                 )}
               </div>
 
-              {/* Apply Referral Code (Simulate) */}
               <div className="rounded-[28px] border-2 border-fuchsia-400/20 bg-black/40 p-5 backdrop-blur-sm">
                 <div className="mb-3.5 flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-[16px] bg-fuchsia-400/[0.15]">
@@ -965,8 +967,6 @@ export default function Home() {
                   </div>
                 )}
               </div>
-
-              {/* Info note */}
               <p className="mt-4 text-center text-[7px] text-white/25">
                 Referral bonus is simulated in this UI demo. Real functionality coming soon.
               </p>
@@ -976,7 +976,7 @@ export default function Home() {
       )}
 
       {/* =====================================================
-          SETTINGS & PRIVACY MODALS (unchanged)
+          SETTINGS & PRIVACY MODALS
       ====================================================== */}
       <SettingsModal isOpen={showSettings} onClose={closeSettings} onOpenPrivacy={openPrivacy} isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
       <PrivacyPolicyModal isOpen={showPrivacy} onClose={() => setShowPrivacy(false)} />

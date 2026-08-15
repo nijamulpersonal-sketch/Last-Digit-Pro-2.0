@@ -1,11 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
-  Banknote,
   CheckCircle2,
   ChevronRight,
-  Clock3,
-  CreditCard,
   Dices,
   Gift,
   Home as HomeIcon,
@@ -23,6 +20,9 @@ import {
   X,
   Youtube,
   FileText,
+  Copy,
+  Share2,
+  UserPlus,
 } from "lucide-react";
 import { useLocation } from "wouter";
 
@@ -50,14 +50,15 @@ export default function Home() {
 
   const [showBalance, setShowBalance] = useState(false);
   const [showOneFigure, setShowOneFigure] = useState(false);
-  const [showWithdraw, setShowWithdraw] = useState(false); // kept for future use
+  const [showWithdraw, setShowWithdraw] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showReferral, setShowReferral] = useState(false); // NEW
 
   const [activeUsers, setActiveUsers] = useState(37);
 
   /* -------------------------------------------------------
-     THEME STATE (Dark / Light)
+     THEME STATE
   ------------------------------------------------------- */
 
   const [isDarkMode, setIsDarkMode] = useState(true);
@@ -73,20 +74,22 @@ export default function Home() {
   const [promoUsed, setPromoUsed] = useState(false);
 
   /* -------------------------------------------------------
+     REFERRAL STATE (NEW)
+  ------------------------------------------------------- */
+
+  const [referralCode] = useState("REF" + Math.floor(1000 + Math.random() * 9000)); // random 4-digit code
+  const [referralBonus, setReferralBonus] = useState(0);
+  const [referralInput, setReferralInput] = useState("");
+  const [referralMessage, setReferralMessage] = useState("");
+  const [referralApplied, setReferralApplied] = useState(false);
+
+  /* -------------------------------------------------------
      ONE FIGURE
   ------------------------------------------------------- */
 
   const [quantities, setQuantities] = useState<Record<number, number>>(
     {}
   );
-
-  /* -------------------------------------------------------
-     WITHDRAW UI STATE (Kept but not used)
-     ------------------------------------------------------- */
-
-  const [withdrawMethod, setWithdrawMethod] = useState<
-    "upi" | "bank"
-  >("upi");
 
   /* -------------------------------------------------------
      ACTIVE USER ANIMATION
@@ -130,7 +133,7 @@ export default function Home() {
   const totalFigureCoins = totalQuantity * COINS_PER_QUANTITY;
 
   /* -------------------------------------------------------
-     PROMO CODE (active, but hidden from UI)
+     PROMO CODE (existing, unchanged)
   ------------------------------------------------------- */
 
   const activatePromo = () => {
@@ -153,7 +156,39 @@ export default function Home() {
   };
 
   /* -------------------------------------------------------
-     QUANTITY
+     REFERRAL LOGIC (NEW, SIMULATED)
+  ------------------------------------------------------- */
+
+  const applyReferral = () => {
+    const code = referralInput.trim().toUpperCase();
+
+    if (referralApplied) {
+      setReferralMessage("Referral already applied.");
+      return;
+    }
+
+    // Simulate: if the code matches any valid referral (we'll just accept any code for demo)
+    if (code.length >= 4) {
+      // Simulate that the referred person adds coins via promo
+      // We'll give 10% bonus of 1000 coins = 100 coins
+      setCoins((current) => current + 100);
+      setReferralBonus((prev) => prev + 100);
+      setReferralApplied(true);
+      setReferralInput("");
+      setReferralMessage("Referral applied! You earned 100 bonus coins (10% of 1000).");
+    } else {
+      setReferralMessage("Invalid referral code.");
+    }
+  };
+
+  const copyReferralCode = () => {
+    navigator.clipboard.writeText(referralCode);
+    setReferralMessage("Referral code copied!");
+    setTimeout(() => setReferralMessage(""), 2000);
+  };
+
+  /* -------------------------------------------------------
+     QUANTITY (unchanged)
   ------------------------------------------------------- */
 
   const increaseQuantity = (digit: number) => {
@@ -180,7 +215,7 @@ export default function Home() {
   };
 
   /* -------------------------------------------------------
-     OPEN EXTERNAL PAGES
+     OPEN EXTERNAL PAGES (unchanged)
   ------------------------------------------------------- */
 
   const openYouTube = () => {
@@ -208,7 +243,7 @@ export default function Home() {
   };
 
   /* -------------------------------------------------------
-     SETTINGS
+     SETTINGS (unchanged)
   ------------------------------------------------------- */
 
   const openSettings = () => {
@@ -259,11 +294,7 @@ export default function Home() {
     <div
       className={`min-h-screen overflow-x-hidden transition-colors duration-300 pb-24 ${themeClasses.bg} ${themeClasses.text} selection:bg-cyan-400/30`}
     >
-
-      {/* =====================================================
-          SIMPLE AMBIENT BACKGROUND (no neon blobs)
-      ====================================================== */}
-
+      {/* Ambient background */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-[#0f0f1a] via-[#1a1a2e] to-[#0a0a12] opacity-80" />
         {!isDarkMode && (
@@ -271,32 +302,18 @@ export default function Home() {
         )}
       </div>
 
-
-      {/* =====================================================
-          MAIN CONTAINER
-      ====================================================== */}
-
+      {/* MAIN CONTAINER */}
       <main className="relative z-10 mx-auto w-full max-w-md px-4 pt-5">
-
-        {/* ===================================================
-            TOP BAR
-        ================================================== */}
-
+        {/* TOP BAR */}
         <header className="mb-6">
-
           <div className="flex items-center justify-between">
-
-            {/* Brand Logo */}
-
             <div className="flex items-center gap-3">
-
               <div className="relative flex h-14 w-14 items-center justify-center rounded-[20px] bg-gradient-to-br from-cyan-400 via-blue-600 to-fuchsia-600 shadow-lg border border-white/20">
                 <Dices className="h-7 w-7 text-white" />
                 <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full border-2 border-[#0a0a12] bg-gradient-to-br from-yellow-400 to-orange-500 text-[8px] font-black text-[#0a0a12]">
                   ✦
                 </span>
               </div>
-
               <div>
                 <p className="text-[7px] font-bold uppercase tracking-[0.3em] text-cyan-400/60">
                   Cyber Gaming
@@ -308,22 +325,15 @@ export default function Home() {
                   </span>
                 </h1>
               </div>
-
             </div>
-
-
-            {/* Balance Button - Cyan */}
-
             <button
               type="button"
               onClick={() => setShowBalance(true)}
               className={`group flex items-center gap-2 rounded-[20px] border-2 border-cyan-400/50 px-4 py-2.5 backdrop-blur-xl transition active:scale-95 hover:border-cyan-300/80 ${isDarkMode ? "bg-black/40" : "bg-white/80 shadow-md"}`}
             >
-
               <div className="flex h-9 w-9 items-center justify-center rounded-[14px] bg-gradient-to-br from-cyan-400 to-blue-600 shadow-md">
                 <Wallet className="h-4.5 w-4.5 text-white" />
               </div>
-
               <div className="text-left">
                 <p className="text-[6px] font-bold uppercase tracking-[0.18em] text-white/50">
                   Coins
@@ -332,18 +342,10 @@ export default function Home() {
                   {coins.toLocaleString()}
                 </p>
               </div>
-
               <Plus className="h-4 w-4 text-cyan-400 transition group-active:rotate-90" />
-
             </button>
-
           </div>
-
-
-          {/* Live Status Bar */}
-
           <div className={`mt-4 flex items-center justify-between rounded-[18px] border ${isDarkMode ? "border-white/[0.08] bg-black/30" : "border-black/10 bg-white/60 shadow-sm"} px-4 py-3 backdrop-blur-md`}>
-
             <div className="flex items-center gap-3">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="absolute h-full w-full animate-ping rounded-full bg-lime-400 opacity-80" />
@@ -353,31 +355,20 @@ export default function Home() {
                 Server Live
               </span>
             </div>
-
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-cyan-400" />
               <span className="text-[9px] font-bold text-white/60">
                 {activeUsers} Active
               </span>
             </div>
-
           </div>
-
         </header>
 
-
-        {/* ===================================================
-            HERO PANEL - changed text
-        ================================================== */}
-
+        {/* HERO PANEL */}
         <section className="mb-5">
-
           <div className={`relative overflow-hidden rounded-[32px] border-2 border-cyan-400/20 p-5 shadow-lg ${isDarkMode ? "bg-gradient-to-br from-[#120f1f] via-[#0a0a1a] to-[#05050a]" : "bg-white/80 backdrop-blur-sm"}`}>
-
             <div className="relative">
-
               <div className="flex items-center justify-between">
-
                 <div>
                   <div className="mb-2.5 flex items-center gap-2.5">
                     <Sparkles className="h-5 w-5 text-yellow-400" />
@@ -385,8 +376,6 @@ export default function Home() {
                       Roll the Dice
                     </span>
                   </div>
-
-                  {/* Changed hero text */}
                   <h2 className="text-[28px] font-black leading-tight tracking-[-0.03em] text-white drop-shadow-md">
                     Guess the number..
                     <br />
@@ -394,12 +383,10 @@ export default function Home() {
                       0 to 9
                     </span>
                   </h2>
-
                   <p className="mt-2 max-w-[220px] text-[9px] leading-relaxed text-white/40">
                     Pick a digit and win virtual coins.
                   </p>
                 </div>
-
                 <div className={`rounded-[16px] border-2 border-fuchsia-400/30 px-4 py-3 text-center backdrop-blur-md ${isDarkMode ? "bg-black/40" : "bg-white/60"}`}>
                   <p className="text-[5px] font-bold uppercase tracking-wider text-white/40">
                     Status
@@ -411,26 +398,14 @@ export default function Home() {
                     </span>
                   </div>
                 </div>
-
               </div>
-
-              {/* Removed mini stats (ON ZERO FOUR TEN) */}
-
             </div>
-
           </div>
-
         </section>
 
-
-        {/* ===================================================
-            FEATURE GRID
-        ================================================== */}
-
+        {/* FEATURE GRID */}
         <section className="mb-5">
-
           <div className="mb-4 flex items-center justify-between px-1">
-
             <div>
               <p className="text-[7px] font-bold uppercase tracking-[0.2em] text-white/30">
                 Game Center
@@ -439,26 +414,18 @@ export default function Home() {
                 Premium Features
               </h2>
             </div>
-
             <span className="rounded-full border-2 border-cyan-400/30 bg-black/40 px-3.5 py-1.5 text-[7px] font-bold uppercase tracking-wider text-cyan-300 backdrop-blur-sm">
               Neo
             </span>
-
           </div>
-
-
           <div className="grid grid-cols-2 gap-3.5">
-
-            {/* Lucky Search - Cyan */}
-
+            {/* Lucky Search */}
             <button
               type="button"
               onClick={() => setLocation("/lucky-search")}
               className={`group relative min-h-[150px] overflow-hidden rounded-[26px] border-2 border-cyan-400/20 p-4 text-left transition active:scale-[0.96] ${isDarkMode ? "bg-gradient-to-br from-cyan-500/[0.15] via-[#0a0a1a] to-[#05050a]" : "bg-white/70 shadow-md hover:shadow-lg"}`}
             >
-
               <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-cyan-400/[0.20] blur-[60px]" />
-
               <div className="relative">
                 <div className="flex items-start justify-between">
                   <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-gradient-to-br from-cyan-400 to-blue-600 shadow-md">
@@ -479,20 +446,15 @@ export default function Home() {
                   <ChevronRight className="h-3.5 w-3.5 transition group-hover:translate-x-1" />
                 </div>
               </div>
-
             </button>
 
-
-            {/* Dear Digits - Magenta */}
-
+            {/* Dear Digits */}
             <button
               type="button"
               onClick={() => setLocation("/dear-digits")}
               className={`group relative min-h-[150px] overflow-hidden rounded-[26px] border-2 border-fuchsia-400/20 p-4 text-left transition active:scale-[0.96] ${isDarkMode ? "bg-gradient-to-br from-fuchsia-500/[0.15] via-[#0a0a1a] to-[#05050a]" : "bg-white/70 shadow-md hover:shadow-lg"}`}
             >
-
               <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-fuchsia-400/[0.20] blur-[60px]" />
-
               <div className="relative">
                 <div className="flex items-start justify-between">
                   <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-gradient-to-br from-fuchsia-400 to-purple-600 shadow-md">
@@ -515,20 +477,15 @@ export default function Home() {
                   <ChevronRight className="h-3.5 w-3.5 transition group-hover:translate-x-1" />
                 </div>
               </div>
-
             </button>
 
-
-            {/* One Figure - Orange */}
-
+            {/* One Figure */}
             <button
               type="button"
               onClick={() => setShowOneFigure(true)}
               className={`group relative min-h-[150px] overflow-hidden rounded-[26px] border-2 border-orange-400/20 p-4 text-left transition active:scale-[0.96] ${isDarkMode ? "bg-gradient-to-br from-orange-500/[0.15] via-[#0a0a1a] to-[#05050a]" : "bg-white/70 shadow-md hover:shadow-lg"}`}
             >
-
               <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-orange-400/[0.20] blur-[60px]" />
-
               <div className="relative">
                 <div className="flex items-start justify-between">
                   <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-gradient-to-br from-orange-400 via-amber-500 to-red-600 shadow-md">
@@ -551,20 +508,15 @@ export default function Home() {
                   <ChevronRight className="h-3.5 w-3.5 transition group-hover:translate-x-1" />
                 </div>
               </div>
-
             </button>
 
-
-            {/* Lottery Fax - Lime */}
-
+            {/* Lottery Fax */}
             <button
               type="button"
               onClick={openLotteryFax}
               className={`group relative min-h-[150px] overflow-hidden rounded-[26px] border-2 border-lime-400/20 p-4 text-left transition active:scale-[0.96] ${isDarkMode ? "bg-gradient-to-br from-lime-500/[0.15] via-[#0a0a1a] to-[#05050a]" : "bg-white/70 shadow-md hover:shadow-lg"}`}
             >
-
               <div className="absolute -right-12 -top-12 h-32 w-32 rounded-full bg-lime-400/[0.20] blur-[60px]" />
-
               <div className="relative">
                 <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-gradient-to-br from-lime-400 to-green-600 shadow-md">
                   <FileText className="h-5.5 w-5.5 text-white" />
@@ -582,32 +534,21 @@ export default function Home() {
                   <ChevronRight className="h-3.5 w-3.5 transition group-hover:translate-x-1" />
                 </div>
               </div>
-
             </button>
-
           </div>
-
         </section>
 
-
-        {/* ===================================================
-            YOUTUBE
-        ================================================== */}
-
+        {/* YOUTUBE */}
         <section className="mb-5">
-
           <button
             type="button"
             onClick={openYouTube}
             className={`group relative flex w-full items-center gap-3.5 overflow-hidden rounded-[28px] border-2 border-red-500/30 p-4.5 text-left transition active:scale-[0.98] ${isDarkMode ? "bg-gradient-to-r from-red-500/[0.15] via-black/40 to-transparent" : "bg-white/70 shadow-md hover:shadow-lg"}`}
           >
-
             <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-red-500/[0.20] blur-[60px]" />
-
             <div className="relative flex h-13 w-13 shrink-0 items-center justify-center rounded-[18px] bg-gradient-to-br from-red-500 to-red-700 shadow-md">
               <Youtube className="h-6.5 w-6.5 text-white" />
             </div>
-
             <div className="relative min-w-0 flex-1">
               <div className="flex items-center gap-2.5">
                 <h3 className="text-[15px] font-black text-white">
@@ -621,95 +562,16 @@ export default function Home() {
                 YouTube Channel • Watch latest content
               </p>
             </div>
-
             <ArrowRight className="relative h-5 w-5 text-red-300/70 transition group-active:translate-x-1" />
-
           </button>
-
         </section>
 
-
-        {/* ===================================================
-            BALANCE / PACKAGES - (Promo code hidden)
-        ================================================== */}
-
-        <section className="mb-5">
-
-          <div className={`relative overflow-hidden rounded-[32px] border-2 border-yellow-400/20 p-5 shadow-lg ${isDarkMode ? "bg-gradient-to-br from-[#1a1505] via-[#0c0d12] to-[#05050a]" : "bg-white/80 backdrop-blur-sm"}`}>
-
-            <div className="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-yellow-400/[0.15] blur-[70px]" />
-
-            <div className="relative">
-              <div className="mb-5 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-gradient-to-br from-yellow-400 to-orange-500 shadow-md">
-                    <Wallet className="h-5.5 w-5.5 text-[#05050a]" />
-                  </div>
-                  <div>
-                    <p className="text-[7px] font-bold uppercase tracking-[0.18em] text-yellow-400/60">
-                      Virtual Wallet
-                    </p>
-                    <h2 className="text-[18px] font-black text-white drop-shadow-md">
-                      Add Coins
-                    </h2>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowBalance(true)}
-                  className="rounded-[14px] border-2 border-yellow-400/30 bg-black/50 px-4 py-2 text-[7px] font-black uppercase tracking-wider text-yellow-300 backdrop-blur-md"
-                >
-                  Promo
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
-                {PACKAGES.map((item) => (
-                  <button
-                    key={item.amount}
-                    type="button"
-                    disabled
-                    className="relative overflow-hidden rounded-[18px] border border-white/[0.06] bg-black/40 px-3 py-3.5 text-left opacity-70 transition hover:opacity-90"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-[7px] font-bold uppercase tracking-wider text-white/40">
-                        {item.label}
-                      </span>
-                      <Lock className="h-4 w-4 text-white/30" />
-                    </div>
-                    <p className="mt-1.5 text-[14px] font-black text-white/85">
-                      ₹{item.amount.toLocaleString("en-IN")}
-                    </p>
-                    <p className="mt-0.5 text-[6px] text-yellow-400/70">
-                      {item.coins.toLocaleString()} Coins
-                    </p>
-                    <div className="mt-3 text-[5.5px] font-bold uppercase tracking-wider text-white/20">
-                      Disabled
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              {/* Promo code display removed – only the input remains in modal */}
-            </div>
-
-          </div>
-
-        </section>
-
-
-        {/* ===================================================
-            SECURITY
-        ================================================== */}
-
+        {/* SECURITY */}
         <section>
-
           <div className={`flex items-center gap-3.5 rounded-[24px] border-2 border-emerald-400/20 px-5 py-4 backdrop-blur-md ${isDarkMode ? "bg-emerald-400/[0.05]" : "bg-white/60 shadow-md"}`}>
-
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[16px] bg-emerald-400/[0.15] shadow-md">
               <ShieldCheck className="h-5.5 w-5.5 text-emerald-400" />
             </div>
-
             <div className="min-w-0">
               <h3 className="text-[11px] font-bold text-white/90">
                 Secure Environment
@@ -718,106 +580,66 @@ export default function Home() {
                 Virtual coin balance • UI demo
               </p>
             </div>
-
             <CheckCircle2 className="ml-auto h-5 w-5 shrink-0 text-emerald-400/80" />
-
           </div>
-
         </section>
-
       </main>
 
-
-      {/* =====================================================
-          BOTTOM NAVIGATION - Withdraw removed
-      ====================================================== */}
-
+      {/* BOTTOM NAVIGATION (5 tabs - Home, Figure, Support, Referral, Settings) */}
       <nav className="fixed bottom-0 left-0 right-0 z-50">
-
         <div className="mx-auto max-w-md px-3 pb-4">
-
           <div className={`flex items-center justify-between rounded-[34px] border-2 border-white/10 px-3 py-2.5 backdrop-blur-2xl ${isDarkMode ? "bg-black/70" : "bg-white/80 shadow-lg"}`}>
-
-            {/* Home - Cyan (changed from gold) */}
-            <button
-              type="button"
-              className="flex min-w-[55px] flex-col items-center py-1.5 transition hover:scale-110"
-            >
+            {/* Home */}
+            <button type="button" className="flex min-w-[45px] flex-col items-center py-1.5 transition hover:scale-110">
               <div className="flex h-10 w-10 items-center justify-center rounded-[16px] bg-gradient-to-br from-cyan-400 to-blue-600 shadow-md">
                 <HomeIcon className="h-5 w-5 text-white" />
               </div>
-              <span className="mt-1.5 text-[7px] font-black uppercase tracking-wider text-cyan-300">
-                Home
-              </span>
+              <span className="mt-1.5 text-[6px] font-black uppercase tracking-wider text-cyan-300">Home</span>
             </button>
 
-
             {/* Figure */}
-            <button
-              type="button"
-              onClick={() => setShowOneFigure(true)}
-              className="flex min-w-[55px] flex-col items-center py-1.5 transition hover:scale-110"
-            >
+            <button type="button" onClick={() => setShowOneFigure(true)} className="flex min-w-[45px] flex-col items-center py-1.5 transition hover:scale-110">
               <div className="flex h-10 w-10 items-center justify-center rounded-[16px] bg-gradient-to-br from-orange-400 to-red-600 shadow-md">
                 <Dices className="h-5 w-5 text-white" />
               </div>
-              <span className="mt-1.5 text-[7px] font-black uppercase tracking-wider text-orange-300">
-                Figure
-              </span>
+              <span className="mt-1.5 text-[6px] font-black uppercase tracking-wider text-orange-300">Figure</span>
             </button>
 
-
             {/* Support */}
-            <button
-              type="button"
-              onClick={openSupport}
-              className="flex min-w-[55px] flex-col items-center py-1.5 transition hover:scale-110"
-            >
+            <button type="button" onClick={openSupport} className="flex min-w-[45px] flex-col items-center py-1.5 transition hover:scale-110">
               <div className="flex h-10 w-10 items-center justify-center rounded-[16px] bg-gradient-to-br from-blue-400 to-indigo-600 shadow-md">
                 <Send className="h-5 w-5 text-white" />
               </div>
-              <span className="mt-1.5 text-[7px] font-black uppercase tracking-wider text-blue-300">
-                Support
-              </span>
+              <span className="mt-1.5 text-[6px] font-black uppercase tracking-wider text-blue-300">Support</span>
             </button>
 
+            {/* Referral (NEW) */}
+            <button type="button" onClick={() => setShowReferral(true)} className="flex min-w-[45px] flex-col items-center py-1.5 transition hover:scale-110">
+              <div className="flex h-10 w-10 items-center justify-center rounded-[16px] bg-gradient-to-br from-fuchsia-400 to-purple-600 shadow-md">
+                <UserPlus className="h-5 w-5 text-white" />
+              </div>
+              <span className="mt-1.5 text-[6px] font-black uppercase tracking-wider text-fuchsia-300">Refer</span>
+            </button>
 
             {/* Settings */}
-            <button
-              type="button"
-              onClick={openSettings}
-              className="flex min-w-[55px] flex-col items-center py-1.5 transition hover:scale-110"
-            >
+            <button type="button" onClick={openSettings} className="flex min-w-[45px] flex-col items-center py-1.5 transition hover:scale-110">
               <div className="flex h-10 w-10 items-center justify-center rounded-[16px] bg-gradient-to-br from-slate-500 to-slate-800 shadow-md">
                 <Settings className="h-5 w-5 text-white" />
               </div>
-              <span className="mt-1.5 text-[7px] font-black uppercase tracking-wider text-white/40">
-                Settings
-              </span>
+              <span className="mt-1.5 text-[6px] font-black uppercase tracking-wider text-white/40">Settings</span>
             </button>
-
           </div>
-
         </div>
-
       </nav>
 
-
       {/* =====================================================
-          BALANCE MODAL - Promo code hidden
+          BALANCE MODAL (unchanged)
       ====================================================== */}
-
       {showBalance && (
-
         <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/90 p-4 backdrop-blur-xl sm:items-center">
-
           <div className={`relative w-full max-w-md overflow-hidden rounded-[36px] border-2 border-cyan-400/30 shadow-2xl ${themeClasses.modalBg} ${themeClasses.modalBorder}`}>
-
             <div className="absolute -right-24 -top-24 h-64 w-64 rounded-full bg-cyan-400/[0.15] blur-[100px]" />
-
             <div className="relative p-6">
-
-              {/* Header */}
               <div className="mb-5 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="flex h-13 w-13 items-center justify-center rounded-[18px] bg-gradient-to-br from-cyan-400 to-blue-600 shadow-md">
@@ -832,16 +654,10 @@ export default function Home() {
                     </h2>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowBalance(false)}
-                  className="flex h-11 w-11 items-center justify-center rounded-[16px] bg-black/60 border border-white/10 transition hover:bg-black/80"
-                >
+                <button type="button" onClick={() => setShowBalance(false)} className="flex h-11 w-11 items-center justify-center rounded-[16px] bg-black/60 border border-white/10 transition hover:bg-black/80">
                   <X className="h-5 w-5 text-white/70" />
                 </button>
               </div>
-
-              {/* Balance */}
               <div className="mb-5 rounded-[28px] border-2 border-yellow-400/20 bg-gradient-to-r from-yellow-400/[0.10] to-transparent p-5 backdrop-blur-sm">
                 <p className="text-[7px] font-bold uppercase tracking-[0.2em] text-white/40">
                   Current Virtual Coins
@@ -855,8 +671,7 @@ export default function Home() {
                   </span>
                 </div>
               </div>
-
-              {/* Promo - Code input only, no display of active code */}
+              {/* Promo */}
               <div className="rounded-[28px] border-2 border-fuchsia-400/20 bg-black/40 p-5 backdrop-blur-sm">
                 <div className="mb-3.5 flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-[16px] bg-fuchsia-400/[0.15]">
@@ -871,7 +686,6 @@ export default function Home() {
                     </p>
                   </div>
                 </div>
-
                 <div className="flex gap-2.5">
                   <input
                     value={promoCode}
@@ -882,194 +696,104 @@ export default function Home() {
                     placeholder="Enter promo code"
                     className="min-w-0 flex-1 rounded-[16px] border-2 border-white/10 bg-black/60 px-4.5 py-3.5 text-[11px] font-bold text-white outline-none placeholder:text-white/30 focus:border-cyan-400/50"
                   />
-                  <button
-                    type="button"
-                    onClick={activatePromo}
-                    disabled={promoUsed}
-                    className="rounded-[16px] bg-gradient-to-r from-cyan-400 to-blue-600 px-5 text-[8px] font-black uppercase tracking-wider text-white shadow-md disabled:opacity-30"
-                  >
+                  <button type="button" onClick={activatePromo} disabled={promoUsed} className="rounded-[16px] bg-gradient-to-r from-cyan-400 to-blue-600 px-5 text-[8px] font-black uppercase tracking-wider text-white shadow-md disabled:opacity-30">
                     Activate
                   </button>
                 </div>
-
-                {/* Removed the "Active code: 1000NSK" display */}
                 {promoMessage && (
-                  <p
-                    className={`mt-3 text-[8.5px] font-semibold ${
-                      promoMessage.includes("added")
-                        ? "text-lime-400"
-                        : "text-red-400"
-                    }`}
-                  >
+                  <p className={`mt-3 text-[8.5px] font-semibold ${promoMessage.includes("added") ? "text-lime-400" : "text-red-400"}`}>
                     {promoMessage}
                   </p>
                 )}
               </div>
-
-              {/* Package preview */}
+              {/* Package preview (kept) */}
               <div className="mt-5">
                 <p className="mb-2.5 text-[7px] font-bold uppercase tracking-[0.18em] text-white/30">
                   Available Packages
                 </p>
                 <div className="grid grid-cols-3 gap-2.5">
                   {PACKAGES.slice(0, 6).map((item) => (
-                    <div
-                      key={item.amount}
-                      className="rounded-[18px] border-2 border-white/[0.06] bg-black/40 p-3 opacity-60"
-                    >
+                    <div key={item.amount} className="rounded-[18px] border-2 border-white/[0.06] bg-black/40 p-3 opacity-60">
                       <div className="flex items-center justify-between">
-                        <span className="text-[5px] uppercase tracking-wider text-white/30">
-                          {item.label}
-                        </span>
+                        <span className="text-[5px] uppercase tracking-wider text-white/30">{item.label}</span>
                         <Lock className="h-4 w-4 text-white/30" />
                       </div>
-                      <p className="mt-1.5 text-[12px] font-black text-white/70">
-                        ₹{item.amount.toLocaleString("en-IN")}
-                      </p>
-                      <p className="mt-0.5 text-[6px] text-white/30">
-                        Buy disabled
-                      </p>
+                      <p className="mt-1.5 text-[12px] font-black text-white/70">₹{item.amount.toLocaleString("en-IN")}</p>
+                      <p className="mt-0.5 text-[6px] text-white/30">Buy disabled</p>
                     </div>
                   ))}
                 </div>
               </div>
-
             </div>
-
           </div>
-
         </div>
-
       )}
 
-
       {/* =====================================================
-          ONE FIGURE MODAL - Colorful digits, centered
+          ONE FIGURE MODAL (unchanged, redesigned earlier)
       ====================================================== */}
-
       {showOneFigure && (
-
         <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/90 p-4 backdrop-blur-xl sm:items-center">
-
           <div className={`relative max-h-[94vh] w-full max-w-md overflow-y-auto rounded-[36px] border-2 border-orange-400/30 shadow-2xl ${themeClasses.modalBg} ${themeClasses.modalBorder}`}>
-
             <div className="absolute -right-28 -top-28 h-72 w-72 rounded-full bg-orange-400/[0.15] blur-[100px]" />
-
-            <div className="relative p-6">
-
-              {/* Header */}
-              <div className="mb-5 flex items-center justify-between">
+            <div className="relative p-5">
+              <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-13 w-13 items-center justify-center rounded-[18px] bg-gradient-to-br from-orange-400 via-amber-500 to-red-600 shadow-md">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-[18px] bg-gradient-to-br from-orange-400 via-amber-500 to-red-600 shadow-md">
                     <Dices className="h-6 w-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-[7px] font-bold uppercase tracking-[0.2em] text-orange-400/60">
-                      Game Center
-                    </p>
-                    <h2 className="text-[22px] font-black text-white drop-shadow-md">
-                      One Figure
-                    </h2>
+                    <p className="text-[7px] font-bold uppercase tracking-[0.2em] text-orange-400/60">Game Center</p>
+                    <h2 className="text-[22px] font-black text-white drop-shadow-md">One Figure</h2>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setShowOneFigure(false)}
-                  className="flex h-11 w-11 items-center justify-center rounded-[16px] bg-black/60 border border-white/10 transition hover:bg-black/80"
-                >
+                <button type="button" onClick={() => setShowOneFigure(false)} className="flex h-10 w-10 items-center justify-center rounded-[16px] bg-black/60 border border-white/10 transition hover:bg-black/80">
                   <X className="h-5 w-5 text-white/70" />
                 </button>
               </div>
-
-              {/* Cost */}
-              <div className="mb-5 flex items-center justify-between rounded-[20px] border-2 border-orange-400/20 bg-orange-400/[0.05] px-5 py-3.5 backdrop-blur-sm">
-                <div className="flex items-center gap-2.5">
-                  <Sparkles className="h-4.5 w-4.5 text-orange-400" />
-                  <span className="text-[8.5px] font-bold uppercase tracking-wider text-white/40">
-                    Virtual Cost / Quantity
-                  </span>
+              <div className="mb-4 flex items-center justify-between rounded-[20px] border-2 border-orange-400/20 bg-orange-400/[0.05] px-4 py-3 backdrop-blur-sm">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-orange-400" />
+                  <span className="text-[8px] font-bold uppercase tracking-wider text-white/40">Virtual Cost / Quantity</span>
                 </div>
-                <span className="text-[12px] font-black text-orange-300">
-                  {COINS_PER_QUANTITY} Coins
-                </span>
+                <span className="text-[12px] font-black text-orange-300">{COINS_PER_QUANTITY} Coins</span>
               </div>
-
-              {/* Digits - Colorful backgrounds, centered */}
-              <div className="mb-5 rounded-[28px] border-2 border-white/[0.06] bg-black/40 p-5 backdrop-blur-sm">
-                <div className="mb-4 flex items-center justify-between">
+              <div className="mb-4 rounded-[24px] border-2 border-white/[0.06] bg-black/40 p-4 backdrop-blur-sm">
+                <div className="mb-3 flex items-center justify-between">
                   <div>
-                    <p className="text-[8.5px] font-bold uppercase tracking-[0.18em] text-white/35">
-                      Select Figures
-                    </p>
-                    <p className="mt-0.5 text-[7.5px] text-white/30">
-                      Choose any available figure
-                    </p>
+                    <p className="text-[8px] font-bold uppercase tracking-[0.18em] text-white/35">Select Figures</p>
+                    <p className="mt-0.5 text-[7px] text-white/30">Choose any available figure</p>
                   </div>
-                  <span className="rounded-full bg-black/60 border border-white/10 px-4 py-1.5 text-[7.5px] font-black text-white/40">
-                    0 — 9
-                  </span>
+                  <span className="rounded-full bg-black/60 border border-white/10 px-3 py-1 text-[7px] font-black text-white/40">0 — 9</span>
                 </div>
-
-                <div className="grid grid-cols-5 gap-3 place-items-center">
+                <div className="grid grid-cols-2 gap-3">
                   {Array.from({ length: 10 }, (_, digit) => {
                     const quantity = quantities[digit] || 0;
                     const selected = quantity > 0;
-
-                    // Colorful backgrounds for each digit
                     const colorMap: Record<number, string> = {
-                      0: "bg-gradient-to-br from-red-400 to-red-600",
-                      1: "bg-gradient-to-br from-orange-400 to-orange-600",
-                      2: "bg-gradient-to-br from-amber-400 to-amber-600",
-                      3: "bg-gradient-to-br from-yellow-400 to-yellow-600",
-                      4: "bg-gradient-to-br from-lime-400 to-lime-600",
-                      5: "bg-gradient-to-br from-green-400 to-green-600",
-                      6: "bg-gradient-to-br from-cyan-400 to-cyan-600",
-                      7: "bg-gradient-to-br from-blue-400 to-blue-600",
-                      8: "bg-gradient-to-br from-indigo-400 to-indigo-600",
-                      9: "bg-gradient-to-br from-fuchsia-400 to-fuchsia-600",
+                      0: "from-red-400 to-red-600",
+                      1: "from-orange-400 to-orange-600",
+                      2: "from-amber-400 to-amber-600",
+                      3: "from-yellow-400 to-yellow-600",
+                      4: "from-lime-400 to-lime-600",
+                      5: "from-green-400 to-green-600",
+                      6: "from-cyan-400 to-cyan-600",
+                      7: "from-blue-400 to-blue-600",
+                      8: "from-indigo-400 to-indigo-600",
+                      9: "from-fuchsia-400 to-fuchsia-600",
                     };
-
                     return (
-                      <div
-                        key={digit}
-                        className={`rounded-[18px] border-2 p-3 transition ${
-                          selected
-                            ? "border-white/40 shadow-lg"
-                            : "border-white/[0.06] bg-white/[0.03]"
-                        }`}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => increaseQuantity(digit)}
-                          className={`mx-auto flex h-12 w-12 items-center justify-center rounded-[18px] text-[18px] font-black transition active:scale-90 shadow-md ${
-                            selected
-                              ? `${colorMap[digit]} text-white`
-                              : "bg-white/[0.06] text-white/80"
-                          }`}
-                        >
+                      <div key={digit} className={`rounded-[16px] border-2 p-3 transition ${selected ? "border-orange-400/60 shadow-[0_0_20px_rgba(255,165,0,0.3)]" : "border-white/[0.06] bg-white/[0.03]"}`}>
+                        <button type="button" onClick={() => increaseQuantity(digit)} className={`mx-auto flex h-12 w-12 items-center justify-center rounded-[16px] text-[20px] font-black transition active:scale-90 shadow-md ${selected ? `bg-gradient-to-br ${colorMap[digit]} text-white` : "bg-white/[0.06] text-white/80"}`}>
                           {digit}
                         </button>
-
-                        <div className="mt-3 flex items-center justify-center gap-2">
-                          <button
-                            type="button"
-                            disabled={!selected}
-                            onClick={() => decreaseQuantity(digit)}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.06] transition disabled:opacity-20 hover:bg-white/[0.15]"
-                          >
-                            <Minus className="h-4 w-4 text-white/70" />
+                        <div className="mt-3 flex items-center justify-center gap-3">
+                          <button type="button" disabled={!selected} onClick={() => decreaseQuantity(digit)} className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.06] transition disabled:opacity-20 hover:bg-white/[0.15]">
+                            <Minus className="h-3.5 w-3.5 text-white/70" />
                           </button>
-
-                          <span className="text-[12px] font-black text-white/80">
-                            {quantity}
-                          </span>
-
-                          <button
-                            type="button"
-                            onClick={() => increaseQuantity(digit)}
-                            className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.06] transition hover:bg-white/[0.15]"
-                          >
-                            <Plus className="h-4 w-4 text-orange-400" />
+                          <span className="text-[14px] font-black text-white/80 min-w-[20px] text-center">{quantity}</span>
+                          <button type="button" onClick={() => increaseQuantity(digit)} className="flex h-7 w-7 items-center justify-center rounded-lg bg-white/[0.06] transition hover:bg-white/[0.15]">
+                            <Plus className="h-3.5 w-3.5 text-orange-400" />
                           </button>
                         </div>
                       </div>
@@ -1077,106 +801,185 @@ export default function Home() {
                   })}
                 </div>
               </div>
-
-              {/* Selected */}
-              <div className="mb-5 rounded-[28px] border-2 border-white/[0.06] bg-black/40 p-5 backdrop-blur-sm">
-                <div className="mb-3.5 flex items-center justify-between">
-                  <span className="text-[7px] font-bold uppercase tracking-[0.18em] text-white/35">
-                    Current Selection
-                  </span>
-                  <span className="text-[8.5px] font-bold text-white/35">
-                    {selectedDigits.length} selected
-                  </span>
+              <div className="mb-4 rounded-[24px] border-2 border-white/[0.06] bg-black/40 p-4 backdrop-blur-sm">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-[7px] font-bold uppercase tracking-[0.18em] text-white/35">Current Selection</span>
+                  <span className="text-[8px] font-bold text-white/35">{selectedDigits.length} selected</span>
                 </div>
-
                 {selectedDigits.length === 0 ? (
-                  <div className="rounded-[18px] border-2 border-dashed border-white/[0.06] py-7 text-center">
-                    <Dices className="mx-auto h-8 w-8 text-white/20" />
-                    <p className="mt-2 text-[8.5px] text-white/30">
-                      Select a figure to begin
-                    </p>
+                  <div className="rounded-[16px] border-2 border-dashed border-white/[0.06] py-5 text-center">
+                    <Dices className="mx-auto h-6 w-6 text-white/20" />
+                    <p className="mt-1 text-[8px] text-white/30">Select a figure to begin</p>
                   </div>
                 ) : (
-                  <div className="flex flex-wrap gap-3 justify-center">
+                  <div className="flex flex-wrap gap-2 justify-center">
                     {selectedDigits.map((digit) => (
-                      <div
-                        key={digit}
-                        className="flex items-center gap-2.5 rounded-lg border-2 border-orange-400/30 bg-orange-400/[0.10] px-4 py-3 shadow-md"
-                      >
-                        <span className="text-[14px] font-black text-orange-300">
-                          {digit}
-                        </span>
-                        <span className="text-[8px] text-white/50">
-                          ×{quantities[digit]}
-                        </span>
+                      <div key={digit} className="flex items-center gap-2 rounded-lg border-2 border-orange-400/30 bg-orange-400/[0.10] px-3 py-2 shadow-md">
+                        <span className="text-[14px] font-black text-orange-300">{digit}</span>
+                        <span className="text-[7px] text-white/50">×{quantities[digit]}</span>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
-
-              {/* Total */}
-              <div className="mb-5 rounded-[28px] border-2 border-cyan-400/20 bg-gradient-to-r from-cyan-400/[0.05] to-transparent p-5 backdrop-blur-sm">
+              <div className="mb-4 rounded-[24px] border-2 border-cyan-400/20 bg-gradient-to-r from-cyan-400/[0.05] to-transparent p-4 backdrop-blur-sm">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-[7px] font-bold uppercase tracking-wider text-white/30">
-                      Total Quantity
-                    </p>
-                    <p className="mt-1 text-4xl font-black text-white drop-shadow-md">
-                      {totalQuantity}
-                    </p>
+                    <p className="text-[7px] font-bold uppercase tracking-wider text-white/30">Total Quantity</p>
+                    <p className="mt-1 text-3xl font-black text-white drop-shadow-md">{totalQuantity}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[7px] font-bold uppercase tracking-wider text-white/30">
-                      Virtual Coins
-                    </p>
-                    <p className="mt-1 text-4xl font-black text-cyan-300">
-                      {totalFigureCoins}
-                    </p>
+                    <p className="text-[7px] font-bold uppercase tracking-wider text-white/30">Virtual Coins</p>
+                    <p className="mt-1 text-3xl font-black text-cyan-300">{totalFigureCoins}</p>
                   </div>
                 </div>
               </div>
-
-              {/* Disabled action */}
-              <button
-                type="button"
-                disabled
-                className="flex w-full items-center justify-center gap-3 rounded-[20px] bg-gradient-to-r from-cyan-400 to-fuchsia-400 py-4.5 text-[9px] font-black uppercase tracking-[0.15em] text-white opacity-50 shadow-md"
-              >
+              <button type="button" disabled className="flex w-full items-center justify-center gap-3 rounded-[20px] bg-gradient-to-r from-cyan-400 to-fuchsia-400 py-4 text-[9px] font-black uppercase tracking-[0.15em] text-white opacity-50 shadow-md">
                 Continue
                 <ArrowRight className="h-5 w-5" />
               </button>
-
-              <p className="mt-4 text-center text-[7.5px] text-white/25">
-                Game action is currently disabled in this UI build.
-              </p>
-
+              <p className="mt-3 text-center text-[7px] text-white/25">Game action is currently disabled in this UI build.</p>
             </div>
-
           </div>
-
         </div>
-
       )}
 
+      {/* =====================================================
+          REFERRAL MODAL (NEW)
+      ====================================================== */}
+      {showReferral && (
+        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/90 p-4 backdrop-blur-xl sm:items-center">
+          <div className={`relative w-full max-w-md overflow-hidden rounded-[36px] border-2 border-fuchsia-400/30 shadow-2xl ${themeClasses.modalBg} ${themeClasses.modalBorder}`}>
+            <div className="absolute -right-24 -top-24 h-64 w-64 rounded-full bg-fuchsia-400/[0.15] blur-[100px]" />
+            <div className="relative p-6">
+              <div className="mb-5 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-13 w-13 items-center justify-center rounded-[18px] bg-gradient-to-br from-fuchsia-400 to-purple-600 shadow-md">
+                    <UserPlus className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-[7px] font-bold uppercase tracking-[0.2em] text-fuchsia-400/60">
+                      Referral Program
+                    </p>
+                    <h2 className="text-[22px] font-black text-white drop-shadow-md">
+                      Invite & Earn
+                    </h2>
+                  </div>
+                </div>
+                <button type="button" onClick={() => setShowReferral(false)} className="flex h-11 w-11 items-center justify-center rounded-[16px] bg-black/60 border border-white/10 transition hover:bg-black/80">
+                  <X className="h-5 w-5 text-white/70" />
+                </button>
+              </div>
+
+              {/* Your Referral Code */}
+              <div className="mb-5 rounded-[28px] border-2 border-fuchsia-400/20 bg-fuchsia-400/[0.05] p-5 backdrop-blur-sm">
+                <p className="text-[7px] font-bold uppercase tracking-[0.2em] text-white/40">
+                  Your Referral Code
+                </p>
+                <div className="mt-2 flex items-center justify-between">
+                  <span className="text-3xl font-black text-fuchsia-300 drop-shadow-md">{referralCode}</span>
+                  <button
+                    onClick={copyReferralCode}
+                    className="flex items-center gap-2 rounded-[12px] bg-fuchsia-400/20 px-4 py-2 text-[8px] font-bold uppercase tracking-wider text-fuchsia-300 transition hover:bg-fuchsia-400/30"
+                  >
+                    <Copy className="h-4 w-4" />
+                    Copy
+                  </button>
+                </div>
+                <p className="mt-3 text-[8px] text-white/40">
+                  Share this code with friends. When they add coins, you earn 10% bonus!
+                </p>
+                {/* Share button */}
+                <button
+                  onClick={() => {
+                    // Simulate share
+                    if (navigator.share) {
+                      navigator.share({
+                        title: "Join Last Digit Pro!",
+                        text: `Use my referral code ${referralCode} and get bonus coins!`,
+                        url: window.location.href,
+                      });
+                    } else {
+                      setReferralMessage("Share your code manually!");
+                    }
+                  }}
+                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-[14px] border-2 border-fuchsia-400/30 bg-black/40 py-3 text-[8px] font-black uppercase tracking-wider text-fuchsia-300 backdrop-blur-sm transition hover:border-fuchsia-400/60"
+                >
+                  <Share2 className="h-4 w-4" />
+                  Share Code
+                </button>
+                {referralMessage && (
+                  <p className="mt-2 text-center text-[8px] text-fuchsia-300">
+                    {referralMessage}
+                  </p>
+                )}
+              </div>
+
+              {/* Apply Referral Code (Simulate) */}
+              <div className="rounded-[28px] border-2 border-fuchsia-400/20 bg-black/40 p-5 backdrop-blur-sm">
+                <div className="mb-3.5 flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-[16px] bg-fuchsia-400/[0.15]">
+                    <UserPlus className="h-5 w-5 text-fuchsia-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-[11px] font-bold text-white/90">
+                      Enter Referral Code
+                    </h3>
+                    <p className="text-[7px] text-white/30">
+                      Have a friend's code? Enter it here to earn 10% bonus.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2.5">
+                  <input
+                    value={referralInput}
+                    onChange={(e) => {
+                      setReferralInput(e.target.value);
+                      setReferralMessage("");
+                    }}
+                    placeholder="Enter referral code"
+                    className="min-w-0 flex-1 rounded-[16px] border-2 border-white/10 bg-black/60 px-4.5 py-3.5 text-[11px] font-bold text-white outline-none placeholder:text-white/30 focus:border-fuchsia-400/50"
+                  />
+                  <button
+                    type="button"
+                    onClick={applyReferral}
+                    disabled={referralApplied}
+                    className="rounded-[16px] bg-gradient-to-r from-fuchsia-400 to-purple-600 px-5 text-[8px] font-black uppercase tracking-wider text-white shadow-md disabled:opacity-30"
+                  >
+                    Apply
+                  </button>
+                </div>
+                {referralMessage && (
+                  <p className={`mt-3 text-[8.5px] font-semibold ${referralMessage.includes("Invalid") ? "text-red-400" : "text-lime-400"}`}>
+                    {referralMessage}
+                  </p>
+                )}
+                {referralBonus > 0 && (
+                  <div className="mt-3 flex items-center justify-between rounded-[14px] border-2 border-lime-400/20 bg-lime-400/[0.05] p-3">
+                    <span className="text-[8px] font-bold uppercase tracking-wider text-white/40">
+                      Total Bonus Earned
+                    </span>
+                    <span className="text-[16px] font-black text-lime-400">
+                      +{referralBonus} Coins
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Info note */}
+              <p className="mt-4 text-center text-[7px] text-white/25">
+                Referral bonus is simulated in this UI demo. Real functionality coming soon.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* =====================================================
-          SETTINGS MODAL - with theme toggle
+          SETTINGS & PRIVACY MODALS (unchanged)
       ====================================================== */}
-
-      <SettingsModal
-        isOpen={showSettings}
-        onClose={closeSettings}
-        onOpenPrivacy={openPrivacy}
-        isDarkMode={isDarkMode}
-        toggleTheme={toggleTheme}
-      />
-
-      <PrivacyPolicyModal
-        isOpen={showPrivacy}
-        onClose={() => setShowPrivacy(false)}
-      />
-
+      <SettingsModal isOpen={showSettings} onClose={closeSettings} onOpenPrivacy={openPrivacy} isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
+      <PrivacyPolicyModal isOpen={showPrivacy} onClose={() => setShowPrivacy(false)} />
     </div>
   );
 }

@@ -169,7 +169,7 @@ export default function Home() {
       `🕒 ${new Date().toLocaleString()}`;
 
     const encoded = encodeURIComponent(message);
-    const url = `tg://resolve?domain=OneFigure10xbot&text=${encoded}`;
+    const url = `tg://resolve?domain=NskNijamul&text=${encoded}`;
     window.open(url, '_blank');
   };
 
@@ -187,7 +187,7 @@ export default function Home() {
 
   const openSupport = () => {
     window.open(
-      "https://t.me/OneFigure10xbot",
+      "https://t.me/NskNijamul",
       "_blank",
       "noopener,noreferrer"
     );

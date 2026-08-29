@@ -153,7 +153,7 @@ export default function Home() {
   };
 
   /* -------------------------------------------------------
-     ONE FIGURE CONTINUE -> TELEGRAM (UPDATED TO @OneFigure10xbot)
+     ONE FIGURE CONTINUE -> TELEGRAM (স্মার্ট ফ্যালব্যাক সহ)
   ------------------------------------------------------- */
 
   const handleOneFigureContinue = () => {
@@ -169,8 +169,26 @@ export default function Home() {
       `🕒 ${new Date().toLocaleString()}`;
 
     const encoded = encodeURIComponent(message);
-    const url = `tg://resolve?domain=OneFigure10xbot&text=${encoded}`;
-    window.open(url, '_blank');
+
+    const isMobile = /android|iphone|ipad|ipod/i.test(navigator.userAgent);
+    let url;
+
+    if (isMobile) {
+      url = `tg://resolve?domain=OneFigure10xbot&text=${encoded}`;
+    } else {
+      url = `https://t.me/OneFigure10xbot?text=${encoded}`;
+    }
+
+    try {
+      const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+      if (!newWindow || newWindow.closed) {
+        alert('Telegram খুলতে পারেনি। নিচের মেসেজটি কপি করে @OneFigure10xbot-এ পাঠান:\n\n' + message);
+        console.log('Telegram message:\n', message);
+      }
+    } catch (e) {
+      alert('Telegram খুলতে সমস্যা হয়েছে। নিচের মেসেজটি কপি করে পাঠান:\n\n' + message);
+      console.log('Telegram message:\n', message);
+    }
   };
 
   /* -------------------------------------------------------
@@ -186,11 +204,11 @@ export default function Home() {
   };
 
   const openSupport = () => {
-    window.open(
-      "https://t.me/OneFigure10xbot",  // ← এখানে চেঞ্জ করা হয়েছে
-      "_blank",
-      "noopener,noreferrer"
-    );
+    const isMobile = /android|iphone|ipad|ipod/i.test(navigator.userAgent);
+    const url = isMobile
+      ? 'tg://resolve?domain=OneFigure10xbot'
+      : 'https://t.me/OneFigure10xbot';
+    window.open(url, '_blank', 'noopener', 'noreferrer');
   };
 
   const openLotteryFax = () => {
